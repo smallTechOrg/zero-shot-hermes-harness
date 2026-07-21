@@ -92,7 +92,7 @@ async function runQuestion() {
     const res = await fetch("/api/v1/query", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ session_id: "sess1", question, data_source: "cache" }),
+      body: JSON.stringify({ session_id: "sess1", question, data_source: document.getElementById('data-source').value }),
     });
     const body = await res.json();
     if (!res.ok) throw new Error(body?.detail?.message || `HTTP ${res.status}`);

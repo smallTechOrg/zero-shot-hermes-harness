@@ -36,6 +36,11 @@
    <h2>Ask a question</h2>
    <label for="question">Natural-language question</label>
    <input id="question" type="text" placeholder="e.g. How many FIRs were registered in Lucknow last year?" />
+   <label for="data-source">Data source</label>
+   <select id="data-source">
+    <option value="cache">CSV Cache</option>
+    <option value="live">Live DB</option>
+   </select>
    <button id="run-btn">Run</button>
    <div id="status" class="status" hidden></div>
    <div id="error" class="error" hidden></div>
@@ -63,13 +68,17 @@
    </div>
   </section>
 
-  <section class="card stub" id="live-db-card">
+  <section class="card" id="live-db-card">
    <h2>Live Database</h2>
-   <p class="hint">Coming in Phase 2 — connect to the MsSQL read replica and switch between cache and live.</p>
-   <div class="stub-controls">
-    <input disabled placeholder="AGENT_MSSQL_CONNECTION_STRING" />
-    <button disabled>Connect</button>
-    <button disabled>Refresh Cache</button>
+   <p class="hint">Connect to the MsSQL read replica. After connecting, you can refresh the cache to mirror live data.</p>
+   <div class="control-row">
+    <input id="db-conn-input" type="text" placeholder="AGENT_MSSQL_CONNECTION_STRING" style="flex:1" />
+    <button id="db-connect-btn">Connect</button>
+   </div>
+   <div id="db-status" class="status" hidden></div>
+   <div class="control-row" style="margin-top:10px;">
+    <button id="db-refresh-btn">Refresh Cache</button>
+    <div id="refresh-status" class="status" hidden></div>
    </div>
   </section>
 
