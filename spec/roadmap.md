@@ -59,25 +59,29 @@ Currently, analysts request reports from a central database team, leading to 24�
 
 ### Phase 2 — Live MsSQL Connection (with DuckDB cache)
 
+- **Status:** Implemented.
 - **Goal:** Connect to MsSQL read replica; route queries through DuckDB cache for sub-2-second analytical response; cache auto-refreshes on analyst request.
-- **Independent slices (parallel build units):**
-  - `slice-a` (backend) — MsSQL connector (pyodbc), DuckDB ↔ MsSQL sync, live-query routing logic; deps: Phase 1 complete
-  - `slice-b` (frontend) — DB connection panel, source toggle (CSV cache / live DB / both), refresh button; deps: none on frontend wiring, calls same API
-- **Key surfaces / files:**
-  - Backend writes: `src/db/mssql_connector.py`, `src/db/cache_sync.py`, `src/api/routes_db.py`, `src/graph/nodes.py`
-  - Frontend writes: `frontend/public/index.html`, `frontend/public/app.js`
-- **Gate command:** `uv run pytest tests/integration -q`
+- **Implemented surfaces / files:**
+ - Backend: `src/db/mssql_connector.py`, `src/db/cache_sync.py`, `src/api/routes_db.py`, `src/graph/tools.py`, `src/graph/nodes.py`
+ - Frontend: `frontend/public/index.html`, `frontend/public/app.js`
+- **Exposed endpoints:** `POST /api/v1/db/connect`, `GET /api/v1/db/test-connection`, `GET /api/v1/db/schema`, `POST /api/v1/db/refresh-cache`
+- **Gate command:** `uv run pytest tests/unit -q`
 - **How the user tests it (handoff seed):**
-  1. Open the app, enter MsSQL connection string in Settings panel
-  2. Click "Connect" → status badge turns green with schema count
-  3. Click "Refresh Cache" → DuckDB mirrors live schema
-  4. Ask a live-DB question (toggle source to "Live") → answer returns with `source: mssql` and a ~1.5 s response time shown
+ 1. Open the app, enter MsSQL connection string in the Live Database panel
+ 2. Click "Connect" → status shows connected database and table count
+ 3. Click "Refresh Cache" → DuckDB mirrors live schema, returns row-count summary
+ 4. Ask a live-DB question (toggle source to "Live") → answer returns with `source: mssql` and latency shown
 
 ### Phase 3 — Production Hardening (auth, observability, SLO)
 
+- **Status:** Not started.
 - **Goal:** RBAC (analyst vs admin), query audit log, rate limiting, SLO monitoring dashboard, and a production Docker image.
-- **Independent slices (parallel build units):**
-  - `slice-a` (backend) — auth middleware, query audit log table, rate limiter
-  - `slice-b` (frontend) — login screen, admin dashboard, SLO widget
+- **Blocker:** Integration gate blocked by invalid/expired `AGENT_OPENROUTER_API_KEY` in `.env`. Underlying cause is secret invalidity, not app logic.
+- **Independent slices:**
+ - `slice-a` RBAC
+ - `slice-b` Audit log + admin read endpoint
+ - `slice-c` Rate limiter
+ - `slice-d` SLO dashboard widget
+ - `slice-e` Production Docker image
 - **Gate command:** `uv run pytest tests/ -q`
-- **How the user tests it (handoff seed):** full deployment to staging, login as analyst, run a query, check audit log row, check SLO met.
+- **How tests would pass:** valid API key + all new unit/integration tests green before handoff.

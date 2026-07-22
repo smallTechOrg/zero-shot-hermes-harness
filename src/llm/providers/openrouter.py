@@ -20,31 +20,34 @@ class OpenRouterProvider(LLMProvider):
         self._base_url = base_url.rstrip("/")
 
     def complete(self, system: str, user: str, *, max_tokens: int = 1024) -> str:
-        def _call() -> str:
-            resp = httpx.post(
-                f"{self._base_url}/chat/completions",
-                headers={
-                    "Authorization": f"Bearer {self._api_key}",
-                    "content-type": "application/json",
-                },
-                json={
-                    "model": self.model,
-                    "max_tokens": max_tokens,
-                    "messages": [
-                        {"role": "system", "content": system},
-                        {"role": "user", "content": user},
-                    ],
-                },
-                timeout=120.0,
-            )
-            resp.raise_for_status()
-            data = resp.json()
-            try:
-                text = (data["choices"][0]["message"]["content"] or "").strip()
-            except (KeyError, IndexError) as exc:
-                raise LLMError(f"openrouter returned no choices: {list(data)}") from exc
-            if not text:
-                raise LLMError("openrouter returned an empty completion")
-            return text
+     headers = {
+      "Authorization": f"Bearer {self._api_key}",
+      "Content-Type": "application/json",
+      "HTTP-Referer": "https://up-police-data-analyst.local",
+      "X-Title": "UP Police Data Analyst",
+     }
+     def _call() -> str:
+      resp = httpx.post(
+       f"{self._base_url}/chat/completions",
+       headers=headers,
+       json={
+        "model": self.model,
+        "max_tokens": max_tokens,
+        "messages": [
+         {"role": "system", "content": system},
+         {"role": "user", "content": user},
+        ],
+       },
+       timeout=120.0,
+      )
+      resp.raise_for_status()
+      data = resp.json()
+      try:
+       text = (data["choices"][0]["message"]["content"] or "").strip()
+      except (KeyError, IndexError) as exc:
+       raise LLMError(f"openrouter returned no choices: {list(data)}") from exc
+      if not text:
+       raise LLMError("openrouter returned an empty completion")
+      return text
 
-        return with_retries(_call, provider=self.name)
+     return with_retries(_call, provider=self.name)
