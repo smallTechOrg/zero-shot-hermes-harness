@@ -1,0 +1,11 @@
+fir_id,district,date_registered,crime_type,status,beat_name,officer_name
+FIR-2024-001,Lucknow,2024-01-05,Theft,Under Investigation,Beat-12,A. Singh
+FIR-2024-002,Lucknow,2024-01-12,Assault,Closed,Beat-07,R. Verma
+FIR-2024-003,Varanasi,2024-02-03,Vehicle Theft,Under Investigation,Beat-04,P. Sharma
+FIR-2024-004,Lucknow,2024-02-18,Chain Snatching,Chargesheeted,Beat-12,A. Singh
+FIR-2024-005,Varanasi,2024-03-01,Theft,Under Investigation,Beat-04,P. Sharma
+FIR-2024-006,Ghaziabad,2024-01-25,Assault,Closed,Beat-02,S. Ali
+FIR-2024-007,Ghaziabad,2024-03-14,Vehicle Theft,Under Investigation,Beat-02,S. Ali
+FIR-2024-008,Lucknow,2024-03-22,Molestation,Chargesheeted,Beat-07,R. Verma
+FIR-2024-009,Varanasi,2024-04-05,Chain Snatching,Closed,Beat-04,P. Sharma
+FIR-2024-010,Lucknow,2024-04-19,Theft,Under Investigation,Beat-12,A. Singh

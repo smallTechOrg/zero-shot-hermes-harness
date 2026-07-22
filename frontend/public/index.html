@@ -71,12 +71,12 @@
   <section class="card" id="live-db-card">
    <h2>Live Database</h2>
    <p class="hint">Connect to the MsSQL read replica. After connecting, you can refresh the cache to mirror live data.</p>
-   <div class="control-row">
+   <div class="upload-row">
     <input id="db-conn-input" type="text" placeholder="AGENT_MSSQL_CONNECTION_STRING" style="flex:1" />
     <button id="db-connect-btn">Connect</button>
    </div>
    <div id="db-status" class="status" hidden></div>
-   <div class="control-row" style="margin-top:10px;">
+   <div class="upload-row" style="margin-top:10px;">
     <button id="db-refresh-btn">Refresh Cache</button>
     <div id="refresh-status" class="status" hidden></div>
    </div>
