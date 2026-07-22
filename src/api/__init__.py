@@ -33,9 +33,9 @@ def create_app() -> FastAPI:
 
     app.include_router(health.router)
     app.include_router(runs.router)
+    app.include_router(routes_db.router)
     app.include_router(v1_ingest.router, prefix="/api/v1", tags=["ingest"])
     app.include_router(v1_query.router, prefix="/api/v1", tags=["query"])
-    app.include_router(routes_db.router, prefix="/api/v1", tags=["db"])
 
     app.add_middleware(GZipMiddleware, minimum_size=500)
     app.add_middleware(
@@ -45,15 +45,8 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
-    from src.api.rate_limit import RateLimitMiddleware
-    app.add_middleware(RateLimitMiddleware)
-    from src.middleware.auth_middleware import AuthMiddleware
-    app.add_middleware(AuthMiddleware)
 
     if _FRONTEND_DIR.is_dir():
         app.mount("/app", StaticFiles(directory=_FRONTEND_DIR, html=True), name="frontend")
 
     return app
-
-
-app = create_app()
