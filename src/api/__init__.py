@@ -6,6 +6,7 @@ from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
 
 _FRONTEND_DIR = Path(__file__).resolve().parent.parent.parent / "frontend" / "public"
@@ -36,6 +37,7 @@ def create_app() -> FastAPI:
     app.include_router(v1_query.router, prefix="/api/v1", tags=["query"])
     app.include_router(routes_db.router, prefix="/api/v1", tags=["db"])
 
+    app.add_middleware(GZipMiddleware, minimum_size=500)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["*"],
@@ -43,6 +45,10 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+    from src.api.rate_limit import RateLimitMiddleware
+    app.add_middleware(RateLimitMiddleware)
+    from src.middleware.auth_middleware import AuthMiddleware
+    app.add_middleware(AuthMiddleware)
 
     if _FRONTEND_DIR.is_dir():
         app.mount("/app", StaticFiles(directory=_FRONTEND_DIR, html=True), name="frontend")
