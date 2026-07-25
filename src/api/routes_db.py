@@ -7,7 +7,7 @@ from pydantic import BaseModel
 from fastapi import APIRouter
 
 from src.api._common import api_error, ok
-from src.db.cache_sync import refresh_cache
+from src.db.cache_sync import refresh_cache, warmup_cache
 from src.db.mssql_connector import (
     live_query,
     live_schema,
@@ -57,4 +57,14 @@ def refresh_cache_endpoint(session_id: str = "sess1") -> dict:
         result = refresh_cache(session_id)
     except Exception as exc:
         raise api_error("cache_sync_failed", str(exc), 500) from exc
+    return ok(result)
+
+
+@router.post("/db/warmup")
+def warmup_cache_endpoint(session_id: str = "sess1") -> dict:
+    """Refresh cache and pre-create lightweight aggregate views for low-latency queries."""
+    try:
+        result = warmup_cache(session_id)
+    except Exception as exc:
+        raise api_error("cache_warmup_failed", str(exc), 500) from exc
     return ok(result)
