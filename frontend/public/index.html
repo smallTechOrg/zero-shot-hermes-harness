@@ -22,10 +22,11 @@
    <h2>Upload CSVs</h2>
    <p class="hint">Upload one or more CSV files. Each file becomes a queryable table in the DuckDB cache.</p>
    <div class="upload-row">
-    <input id="file-input" type="file" accept=".csv" multiple />
-    <button id="ingest-btn">Ingest</button>
-   </div>
-   <div id="ingest-status" class="status" hidden></div>
+      <input id="file-input" type="file" accept=".csv" multiple />
+      <button id="ingest-btn">Ingest</button>
+    </div>
+    <div id="upload-queue" class="queue-wrap" hidden></div>
+    <div id="ingest-status" class="status" hidden></div>
    <div id="schema-wrap" hidden>
     <h3>Schema</h3>
     <pre id="schema-text" class="mono"></pre>

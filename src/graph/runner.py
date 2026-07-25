@@ -15,6 +15,7 @@ def run_agent(
     session_id: str | None = None,
     data_source: str = "cache",
     uploaded_files: list[str] | None = None,
+    text: str | None = None,
 ) -> str:
     log = get_logger("runner")
     t0 = time.perf_counter()
@@ -29,7 +30,7 @@ def run_agent(
 
     with create_db_session() as session:
         run = RunRow(
-            input_text=instruction,
+            input_text=text or instruction,
             instruction=instruction,
             status="running",
         )
@@ -40,6 +41,7 @@ def run_agent(
         initial: AgentState = {
             "run_id": run_id,
             "instruction": instruction,
+            "text": text or instruction or "",
             "data_source": data_source,
             "session_id": session_id,
             "uploaded_files": uploaded_files,
@@ -53,7 +55,11 @@ def run_agent(
         run.output_text = final_state.get("output_text")
         run.provider = final_state.get("provider")
         run.model = final_state.get("model")
-        run.error_message = final_state.get("error") or final_state.get("error_message")
+        run.error_message = (
+            final_state.get("error")
+            or final_state.get("error_message")
+            or final_state.get("tool_error")
+        )
 
         latency_ms = int((time.perf_counter() - t0) * 1000)
         if run.output_text:
@@ -66,4 +72,4 @@ def run_agent(
             except Exception:  # noqa: BLE001
                 pass
 
-    return str(run_id)
+        return str(run_id)

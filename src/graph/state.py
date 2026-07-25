@@ -11,6 +11,8 @@ class AgentState(TypedDict, total=False):
 
     # Input
     question: str
+    instruction: str
+    text: str
     data_source: str  # "cache" or "live"
 
     # Schema + plan

@@ -1,0 +1,22 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8001:8001"
+    environment:
+      - AGENT_DATABASE_URL=sqlite:///./data/app.db
+      - AGENT_LLM_PROVIDER=openrouter
+      - AGENT_LLM_MODEL=tencent/hy3
+      - AGENT_OPENROUTER_API_KEY=${AGENT_OPENROUTER_API_KEY:-}
+      - AGENT_LOG_LEVEL=INFO
+      - AGENT_DUCKDB_DIR=/app/data/duckdb
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3

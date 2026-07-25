@@ -21,6 +21,39 @@ def _update_state(state: AgentState, **kwargs) -> AgentState:
     return updated
 
 
+def plan_transform(state: AgentState) -> AgentState:
+    instruction = state.get("instruction") or state.get("question") or ""
+    text = state.get("text") or ""
+    if not instruction.strip() and not text.strip():
+        return _update_state(
+            state,
+            error="instruction and text are empty",
+        )
+    try:
+        system = load_prompt("transform")
+        raw = LLMClient().complete(system, instruction + "\n\n" + text, max_tokens=2048)
+        return _update_state(
+            state,
+            output_text=raw,
+            status="completed",
+            provider="transform",
+            model="baseline",
+            error=None,
+        )
+    except LLMError as exc:
+        return _update_state(state, error=str(exc))
+
+
+def finalize_transform(state: AgentState) -> AgentState:
+    output_text = state.get("output_text") or ""
+    return _update_state(
+        state,
+        output_text=output_text,
+        status="completed",
+        error=None,
+    )
+
+
 def plan_query(state: AgentState) -> AgentState:
     try:
         client = LLMClient()
@@ -96,13 +129,17 @@ def execute_tool(state: AgentState) -> AgentState:
     if not state.get("sql"):
         return _update_state(state, tool_error="No SQL was generated from the question.")
     try:
-        result = execute_sql_safe(
+        router = QueryRouter(
             session_id=state.get("session_id") or "",
-            sql=state["sql"],
             data_source=state.get("data_source", "cache"),
-            max_rows=10_000,
         )
-        return _update_state(state, query_result=result, tool_error=None)
+        result = router.execute(state["sql"], max_rows=10_000)
+        return _update_state(
+            state,
+            query_result=result,
+            tool_error=None,
+            latency_ms=result.get("latency_ms"),
+        )
     except Exception as exc:
         return _update_state(state, tool_error=str(exc))
 

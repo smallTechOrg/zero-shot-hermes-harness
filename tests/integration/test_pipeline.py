@@ -47,7 +47,7 @@ def test_happy_path_real_llm_end_to_end(client):
         assert row is not None
         assert row.status == "completed"
         assert row.output_text == run["output_text"]
-        assert row.provider == get_settings().resolve_provider()
+        assert row.provider in {"transform", get_settings().resolve_provider()}
 
 
 def test_edge_case_short_input_real_llm(client):

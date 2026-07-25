@@ -26,7 +26,7 @@ def _to_result(run: RunRow) -> RunResult:
 
 @router.post("/runs")
 def create_run(req: RunRequest, session: Session = Depends(get_session)) -> dict:
-    run_id = run_agent(req.text, req.instruction)
+    run_id = run_agent(instruction=req.instruction, text=req.text)
     run = session.get(RunRow, run_id)
     if run is None:  # pragma: no cover — write happened in run_agent
         raise api_error("run_not_found", f"run {run_id} vanished", 500)
