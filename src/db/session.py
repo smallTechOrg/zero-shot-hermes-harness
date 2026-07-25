@@ -55,5 +55,20 @@ def get_session() -> Generator[Session, None, None]:
 
 
 def init_db() -> None:
-  from src.db.models import Base
-  Base.metadata.create_all(bind=_get_engine())
+    from src.db.models import Base
+    Base.metadata.create_all(bind=_get_engine())
+
+    # Dev-time migration: SQLite `create_all` is non-destructive and won't add columns to existing tables.
+    # This adds `latency_ms` if an older `runs` table is already present.
+    try:
+        from sqlalchemy import inspect, text
+        inspector = inspect(_get_engine())
+        if "runs" in inspector.get_table_names():
+            columns = [c["name"] for c in inspector.get_columns("runs")]
+            if "latency_ms" not in columns:
+                with _get_engine().connect() as conn:
+                    conn.execute(text('ALTER TABLE runs ADD COLUMN latency_ms TEXT'))
+                    conn.commit()
+    except Exception:
+        # Non-blocking: if migration fails, fastapi tests will still surface the schema mismatch.
+        pass
