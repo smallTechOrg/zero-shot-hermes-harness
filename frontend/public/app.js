@@ -115,11 +115,12 @@ async function runQuestion() {
 
   const start = performance.now();
   try {
-    const res = await fetch("/api/v1/query", {
+    const sid = ($("session-select")?.value || "sess1");
+    const res = await fetch(`/api/v1/query?session_id=${encodeURIComponent(sid)}`, {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
-        session_id: "sess1",
+        session_id: sid,
         question,
         data_source: document.getElementById("data-source").value,
       }),
@@ -231,9 +232,10 @@ async function connectDb() {
 }
 
 async function refreshCache() {
-  setRefreshStatus("Refreshing cache...", true);
+  const sid = ($("session-select")?.value || "sess1");
+  setRefreshStatus(`Refreshing cache for ${sid}...`, true);
   try {
-    const res = await fetch("/api/v1/db/refresh-cache?session_id=sess1", { method: "POST" });
+    const res = await fetch(`/api/v1/db/refresh-cache?session_id=${encodeURIComponent(sid)}`, { method: "POST" });
     const body = await res.json();
     if (!res.ok) throw new Error(body?.detail?.message || `HTTP ${res.status}`);
     const info = body.data;
