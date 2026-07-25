@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: data-agent
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: starter
+    region: oregon
+    branch: feature/phase3-prod-hardening-20260801-1040-v0.1
+    envVars:
+      - key: AGENT_DATABASE_URL
+        value: sqlite:///./data/app.db
+      - key: AGENT_LLM_PROVIDER
+        value: openrouter
+      - key: AGENT_LLM_MODEL
+        value: tencent/hy3
+      - key: AGENT_LOG_LEVEL
+        value: INFO
+      - key: PORT
+        value: "8001"
+    healthCheckPath: /health
+    autoDeploy: true
+    disk:
+      name: data
+      mountPath: /app/data
+      sizeGB: 1

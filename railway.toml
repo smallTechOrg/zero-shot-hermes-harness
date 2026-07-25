@@ -1,0 +1,17 @@
+[deploy]
+startCommand = "python -m src"
+healthcheckPath = "/health"
+healthcheckTimeout = 10
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 5
+
+[build]
+builder = "dockerfile"
+dockerfilePath = "Dockerfile"
+
+[deploy.env]
+AGENT_DATABASE_URL = "sqlite:///./data/app.db"
+AGENT_LLM_PROVIDER = "openrouter"
+AGENT_LLM_MODEL = "tencent/hy3"
+AGENT_LOG_LEVEL = "INFO"
+PORT = "8001"
