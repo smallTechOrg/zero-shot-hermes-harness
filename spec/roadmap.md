@@ -1,62 +1,60 @@
-# Roadmap
+# Phases of Development
 
-> Fill in each section. Run `/zero-shot-build [your idea]` to have it filled automatically.
+> **Assumed (from intake):** Phase 1 scope is CSV-first with DuckDB, single-file active per session. Phase 2 adds live MsSQL via pyodbc, multi-file sessions, proactive suggestions, and anomaly flags. The pilot gate is a working single-file CSV upload + NL query + answer + chart + export flow served by the live FastAPI app.
 
 ---
 
-## What This Agent Does
+### Phase 1 — Upload -> Query -> Answer
 
-<!-- FILL IN: One paragraph describing what this agent does, who uses it, and what problem it solves. -->
+- **Goal:** One upload (CSV/Excel), one natural-language question, one chat-quality answer (text + table + chart + export), rendered through the real `/runs` API and a visibly real `/app/` UI. Zero rough edges on that one tested path.
 
-## Who Uses It
-
-<!-- FILL IN: Primary user(s). What is their role? What are they trying to accomplish? -->
-
-## Core Problem Being Solved
-
-<!-- FILL IN: What manual or broken process does this agent replace or improve? -->
-
-## Success Criteria
-
-<!-- FILL IN: How do we know the agent is working? List 3-5 measurable outcomes. -->
-
-- [ ] <!-- criterion 1 -->
-- [ ] <!-- criterion 2 -->
-- [ ] <!-- criterion 3 -->
-
-## What This Agent Does NOT Do (Out of Scope)
-
-<!-- FILL IN: Explicit exclusions prevent scope creep. List things the agent will never do. -->
-
-## Key Constraints
-
-<!-- FILL IN: Hard limits — budget, latency, compliance, API rate limits, etc. -->
-
-## Phases of Development
-
-<!-- FILL IN: The spec-writer fills these in. One phase = one user-testable increment, behind a human testing gate. Default each phase's slices to INDEPENDENT so generators build them concurrently; declare a dependency only when a slice truly needs another's output. Use the per-phase template below — one block per phase. -->
-
-> **Phase 1 is the smallest first-time-right user-testable win.** It must work perfectly the first time the user tests it — zero rough edges on the tested path. Its backend is minimal but REAL on the one core path (no fake data on the tested path). Its frontend is visually complete: real UI for the one working path PLUS clearly-labelled NON-FUNCTIONAL stubs for everything coming later, so the user sees the vision (a stub must never be mistaken for a bug). Each later phase wires those stubs into real functionality, one increment at a time.
-
-### Phase 1 — <!-- short name -->
-
-- **Goal:** <!-- FILL IN: the single smallest user-testable win this phase delivers. -->
-- **Independent slices (parallel build units):** <!-- FILL IN: each slice is a disjoint unit a single generator owns. Note its surface (frontend / backend) and any declared dependency on another slice (default: none). -->
-  - `slice-a` (backend) — <!-- what it builds; deps: none -->
-  - `slice-b` (frontend) — <!-- what it builds; deps: none -->
-- **Key surfaces / files:** <!-- FILL IN: the files/dirs each slice touches. frontend writes the frontend surface; backend writes src/. Never the same file. -->
-- **Gate command:** <!-- FILL IN: one exact runnable command that proves the phase works — real LLM/API via .env keys, production DB driver (never SQLite-as-substitute). e.g. `uv run pytest tests/test_phase1.py` -->
-- **How the user tests it (handoff seed):** <!-- FILL IN: exact run command(s), what to click / look at, the expected result, and which parts are labelled stubs vs real. -->
-
-### Phase 2 — <!-- short name -->
-
-- **Goal:** <!-- FILL IN: next user-testable increment (typically wires a Phase-1 stub into real functionality). -->
 - **Independent slices (parallel build units):**
-  - `slice-a` (backend) — <!-- ...; deps: none -->
-  - `slice-b` (frontend) — <!-- ...; deps: none -->
-- **Key surfaces / files:** <!-- FILL IN -->
-- **Gate command:** <!-- FILL IN: exact runnable command, real LLM/API + production DB driver -->
-- **How the user tests it (handoff seed):** <!-- FILL IN -->
+  - `slice-a` (backend) — Ingestion path, DuckDB exec wrapper, the new LangGraph graph, API contract extension
+    deps: none
+  - `slice-b` (frontend) — Upload UI, query form, answer panel with chart + table + export buttons
+    deps: slice-a contract (response schema)
 
-<!-- Repeat the per-phase block for every phase. -->
+- **Key surfaces / files:**
+  - `spec/agent.md`, `spec/api.md`, `spec/ui.md`, `spec/data.md`
+  - `src/graph/state.py`, `src/graph/nodes.py`, `src/graph/edges.py`, `src/graph/agent.py`
+  - `src/llm/client.py`, `src/api/runs.py`, `src/domain`
+  - `frontend/public/index.html`, `app.js`, `styles.css`
 
+- **Gate command:**
+  `uv run pytest tests/integration -q` (runs against real LLM key in `.env`; never stubbed.)
+
+- **How the user tests it (handoff seed):**
+  1. Run `cd C:/Users/Jayant Pratap/data-agent11 && uv run python -m src`
+  2. Open `http://localhost:8001/app/` — page loads; upload a CSV; type a question
+  3. See prose answer, table data, chart image, and working Export buttons
+  4. Parts clearly labelled as Phase 2 stubs: multi-file manager, session history, follow-up suggestions, anomaly flags, auth
+
+---
+
+### Phase 2 — Live DB, Proactive Intelligence, Multi-file
+
+- **Goal:** Connect live to MsSQL with query caching; enable multi-file active state; surface proactive suggestions and anomaly flags; expose CLI surface.
+
+- **Independent slices (parallel build units):**
+  - `slice-a` (backend) — MsSQL/pyodbc adapter, QueryCache implementation, multi-file session state
+    deps: none (DuckDB path continues to work)
+  - `slice-b` (frontend + backend) — Proactive panel, multi-file manager UI, CLI entrypoint
+    deps: slice-a `QueryCache` + multi-file session contract
+
+- **Key surfaces / files:**
+  - `src/db/` (Alembic migration for `QueryCache`)
+  - `src/graph/nodes.py` (suggest/anomaly nodes enabled)
+  - `src/api/runs.py`, `src/api/sessions.py`
+  - `frontend/public/app.js`, `index.html` (proactive + multi-file UI)
+  - `src/cli.py`
+
+- **Gate command:**
+  `uv run pytest tests/integration -q` (requires `AGENT_MSSQL_CONNECTION_STRING` set in `.env`)
+
+- **How the user tests it (handoff seed):**
+  1. Set `AGENT_MSSQL_CONNECTION_STRING` in `.env`; restart
+  2. Open `/app/`, enter MsSQL session
+  3. Type a cross-table query; see caching note on second attempt
+  4. Upload two files; query across both
+  5. See follow-up suggestions + anomaly flags in the proactive panel
+  6. CLI: `uv run python -m src --query "..." --format chart+table`

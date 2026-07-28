@@ -1,38 +1,31 @@
-# Capabilities Index
+# data-agent11 — Spec Index
 
-> **Boilerplate status:** The spec-writer sub-agent creates one file per capability in this directory. Each file describes exactly one discrete thing the agent can do.
+**Project:** UP Police Data Analyst Agent
+**Status:** Spec complete — ready for build
+**Spec review:** PASS (root inline)
 
 ---
 
-## What Is a Capability?
+## Spec Files
 
-A capability is a single, discrete action or behavior the agent performs. Examples:
-- "Search the web for companies matching criteria X"
-- "Draft a personalized email given a lead profile"
-- "Send a Slack notification when a threshold is crossed"
+| File | What it covers |
+|---|---|
+| `architecture.md` | System overview, component map, layers, data flow, stack, deployment model |
+| `agent.md` | LangGraph graph (planner-first data analyst pattern) |
+| `data.md` | Entities, fields, relationships, lifecycle |
+| `api.md` | REST endpoints, CLI surface |
+| `ui.md` | Web UI screens and interactions |
+| `roadmap.md` | Phased plan with goals, slices, gates, handoff |
+| `README.md` | Spec usage guide |
 
-## Capabilities in This Project
-
-<!-- FILL IN: List capabilities here as they are defined. Each entry links to its spec file (no number prefix). -->
+## Capabilities
 
 | Capability | File |
-|-----------|------|
-| <!-- name --> | [name.md](name.md) |
-
-## How to Add a New Capability
-
-Run `/zero-shot-build [description]` on the existing spec. The spec-writer sub-agent will:
-1. Create a new file in this directory (`<name>.md`, no number prefix)
-2. Update this index
-3. Flag any dependencies on existing capabilities
-4. Self-review that it fits the architecture and data model before returning
-
-## Capability File Template
-
-Each capability file should answer:
-- **What it does** (one sentence)
-- **Inputs** (what data it receives)
-- **Outputs** (what it produces)
-- **External calls** (APIs, LLMs, databases it touches)
-- **Error cases** (what can go wrong and how it's handled)
-- **Success criteria** (how we test it)
+|---|---|
+| CSV/Excel ingest, validation, DuckDB load | `csv-ingestion.md` |
+| Natural-language query execution | `nl-query.md` |
+| NL to SQL, planner-first generation | `sql-generation.md` |
+| Text answer + table + proactive suggestions | `result-rendering.md` |
+| Chart type selection + PNG render | `chart-recommendation.md` |
+| CSV / `.xlsx` export | `export.md` |
+| Multi-file sessions, persistent state | `multi-file-session.md` |
