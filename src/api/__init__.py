@@ -24,9 +24,10 @@ async def _lifespan(app: FastAPI):
 def create_app() -> FastAPI:
     app = FastAPI(title="Zero-Shot Agent", version="0.1.0", lifespan=_lifespan)
 
-    from src.api import health, runs
+    from src.api import health, ingest, runs
 
     app.include_router(health.router)
+    app.include_router(ingest.router)
     app.include_router(runs.router)
 
     if _FRONTEND_DIR.is_dir():
