@@ -1,15 +1,15 @@
 # Phases of Development
 
-> **Assumed (from intake):** Phase 1 scope is CSV-first with DuckDB, single-file active per session. Phase 2 adds live MsSQL via pyodbc, multi-file sessions, proactive suggestions, and anomaly flags. The pilot gate is a working single-file CSV upload + NL query + answer + chart + export flow served by the live FastAPI app.
+> **Phase 1 (current):** CSV-first with DuckDB, multi-file active per session. Phase 2 adds live MsSQL via pyodbc with query caching, proactive suggestions, and anomaly flags. The pilot gate is a working multi-file CSV upload + NL query + answer + table + chart + export flow served by the live FastAPI app.
 
 ---
 
 ### Phase 1 — Upload -> Query -> Answer
 
-- **Goal:** One upload (CSV/Excel), one natural-language question, one chat-quality answer (text + table + chart + export), rendered through the real `/runs` API and a visibly real `/app/` UI. Zero rough edges on that one tested path.
+- **Goal:** One or more CSV uploads, one natural-language question, one chat-quality answer (text + table + chart + export), rendered through the real `/runs` API and a visibly real `/app/` UI. Zero rough edges on that one tested path.
 
 - **Independent slices (parallel build units):**
-  - `slice-a` (backend) — Ingestion path, DuckDB exec wrapper, the new LangGraph graph, API contract extension
+  - `slice-a` (backend) — Ingestion path, DuckDB exec wrapper, the LangGraph graph, API contract extension
     deps: none
   - `slice-b` (frontend) — Upload UI, query form, answer panel with chart + table + export buttons
     deps: slice-a contract (response schema)
@@ -25,9 +25,9 @@
 
 - **How the user tests it (handoff seed):**
   1. Run `cd C:/Users/Jayant Pratap/data-agent11 && uv run python -m src`
-  2. Open `http://localhost:8001/app/` — page loads; upload a CSV; type a question
+  2. Open `http://localhost:8001/app/` — page loads; upload one or more CSVs; type a question
   3. See prose answer, table data, chart image, and working Export buttons
-  4. Parts clearly labelled as Phase 2 stubs: multi-file manager, session history, follow-up suggestions, anomaly flags, auth
+  4. Parts clearly labelled as Phase 2 stubs: live DB connection, multi-source caching, follow-up suggestions, anomaly flags, auth
 
 ---
 

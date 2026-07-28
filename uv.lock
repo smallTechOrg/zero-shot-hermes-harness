@@ -59,6 +59,31 @@ wheels = [
 ]
 
 [[package]]
+name = "beautifulsoup4"
+version = "4.15.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "soupsieve" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/43/65/318323f98dbee45d42dff61d8f047181bc6f2268a9068cfad035a46be5af/beautifulsoup4-4.15.0.tar.gz", hash = "sha256:288e3ca7d54b06f2ac191970bc275c1939cb46d450b255bf6718b04aa37ab4f7", size = 632571, upload-time = "2026-06-07T16:44:20.453Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/88/c6/92fcd42f1ba33e1184263f25bfabf3d27c383410470f169e4b8163bf9c17/beautifulsoup4-4.15.0-py3-none-any.whl", hash = "sha256:d6f88de62e1d4e38ecb1077eb9724cd0eff29d2a08ca16a401e9b9e93f117cf9", size = 109924, upload-time = "2026-06-07T16:44:21.566Z" },
+]
+
+[[package]]
+name = "bs4"
+version = "0.0.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "beautifulsoup4" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/c9/aa/4acaf814ff901145da37332e05bb510452ebed97bc9602695059dd46ef39/bs4-0.0.2.tar.gz", hash = "sha256:a48685c58f50fe127722417bae83fe6badf500d54b55f7e39ffe43b798653925", size = 698, upload-time = "2024-01-17T18:15:47.371Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/51/bb/bf7aab772a159614954d84aa832c129624ba6c32faa559dfb200a534e50b/bs4-0.0.2-py2.py3-none-any.whl", hash = "sha256:abf8742c0805ef7f662dce4b51cca104cffe52b835238afc169142ab9b3fbccc", size = 1189, upload-time = "2024-01-17T18:15:48.613Z" },
+]
+
+[[package]]
 name = "certifi"
 version = "2026.6.17"
 source = { registry = "https://pypi.org/simple" }
@@ -459,6 +484,19 @@ wheels = [
 ]
 
 [[package]]
+name = "httpcore2"
+version = "2.9.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "h11" },
+    { name = "truststore" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/39/a8/20ed1ed79cbc2ecdf5301c0968ab7c85547212e2a7bd126ddd2d986e206e/httpcore2-2.9.1.tar.gz", hash = "sha256:4d8acbf8b306f48c9d6046591fd5ba4037d1b1b1000d140fc2c3eab1e9a0c0e2", size = 67089, upload-time = "2026-07-24T09:21:03.867Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/9f/fb/46c52b781975c335a2bcf1072c7bbc007cbdc8d674217f5ee1daba2c848b/httpcore2-2.9.1-py3-none-any.whl", hash = "sha256:6182472379e855fe4221246a2bb7ecede403bc61c6798062ae1787d051ccde26", size = 82809, upload-time = "2026-07-24T09:21:01.178Z" },
+]
+
+[[package]]
 name = "httptools"
 version = "0.8.0"
 source = { registry = "https://pypi.org/simple" }
@@ -514,6 +552,22 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/b1/df/48c586a5fe32a0f01324ee087459e112ebb7224f646c0b5023f5e79e9956/httpx-0.28.1.tar.gz", hash = "sha256:75e98c5f16b0f35b567856f597f06ff2270a374470a5c2392242528e3e3e42fc", size = 141406, upload-time = "2024-12-06T15:37:23.222Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/2a/39/e50c7c3a983047577ee07d2a9e53faf5a69493943ec3f6a384bdc792deb2/httpx-0.28.1-py3-none-any.whl", hash = "sha256:d909fcccc110f8c7faf814ca82a9a4d816bc5a6dbfea25d6591d6985b8ba59ad", size = 73517, upload-time = "2024-12-06T15:37:21.509Z" },
+]
+
+[[package]]
+name = "httpx2"
+version = "2.9.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "anyio" },
+    { name = "httpcore2" },
+    { name = "idna" },
+    { name = "truststore" },
+    { name = "typing-extensions", marker = "python_full_version < '3.13'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/21/14/38128fbafd7e0ed41d874df6c9a653d47c2d111cfe59e2b4ac95161b4abd/httpx2-2.9.1.tar.gz", hash = "sha256:1932a768737e3666291582833da748cc4e563c337cf96706fccc04fa6e58764a", size = 95458, upload-time = "2026-07-24T09:21:04.972Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/13/b8/cfd91c4ab9134d386d48f0b6ac662ff3d4be6efdee59ee1c67ebc3c0487c/httpx2-2.9.1-py3-none-any.whl", hash = "sha256:1820fe14a9ab1107bfeff39259987429450b070ec0ff38cc87eb0d8c97fdc71a", size = 91191, upload-time = "2026-07-24T09:21:02.6Z" },
 ]
 
 [[package]]
@@ -1644,6 +1698,15 @@ wheels = [
 ]
 
 [[package]]
+name = "soupsieve"
+version = "2.9.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/d9/38/e12680bbe6b4f8f3d17adcaf38d26850aa756c85cf4a80e79fc12a018fe8/soupsieve-2.9.1.tar.gz", hash = "sha256:c33e6605bbc71dd628b00c632d58ae607c22bade247e52553928f83bbb75b4ba", size = 122261, upload-time = "2026-07-21T16:57:17.452Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/0f/2c/437fe806897c2d6cfdc3ee43a18da8bf8e568530a4ae9bac781541ca9896/soupsieve-2.9.1-py3-none-any.whl", hash = "sha256:4f4477399246b7a0c720a88ca2454b11cd6bb9ae4c9d170140786e916776c14c", size = 37404, upload-time = "2026-07-21T16:57:16.421Z" },
+]
+
+[[package]]
 name = "sqlalchemy"
 version = "2.0.51"
 source = { registry = "https://pypi.org/simple" }
@@ -1720,6 +1783,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/47/c6/ee486fd809e357697ee8a44d3d69222b344920433d3b6666ccd9b374630c/tenacity-9.1.4.tar.gz", hash = "sha256:adb31d4c263f2bd041081ab33b498309a57c77f9acf2db65aadf0898179cf93a", size = 49413, upload-time = "2026-02-07T10:45:33.841Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/d7/c1/eb8f9debc45d3b7918a32ab756658a0904732f75e555402972246b0b8e71/tenacity-9.1.4-py3-none-any.whl", hash = "sha256:6095a360c919085f28c6527de529e76a06ad89b23659fa881ae0649b867a9d55", size = 28926, upload-time = "2026-02-07T10:45:32.24Z" },
+]
+
+[[package]]
+name = "truststore"
+version = "0.10.4"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/53/a3/1585216310e344e8102c22482f6060c7a6ea0322b63e026372e6dcefcfd6/truststore-0.10.4.tar.gz", hash = "sha256:9d91bd436463ad5e4ee4aba766628dd6cd7010cf3e2461756b3303710eebc301", size = 26169, upload-time = "2025-08-12T18:49:02.73Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/19/97/56608b2249fe206a67cd573bc93cd9896e1efb9e98bce9c163bcdc704b88/truststore-0.10.4-py3-none-any.whl", hash = "sha256:adaeaecf1cbb5f4de3b1959b42d41f6fab57b2b1666adb59e89cb0b53361d981", size = 18660, upload-time = "2025-08-12T18:49:01.46Z" },
 ]
 
 [[package]]
@@ -2200,15 +2272,18 @@ version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "alembic" },
+    { name = "bs4" },
     { name = "duckdb" },
     { name = "fastapi" },
     { name = "httpx" },
+    { name = "httpx2" },
     { name = "langgraph" },
     { name = "matplotlib" },
     { name = "openpyxl" },
     { name = "pandas" },
     { name = "pydantic" },
     { name = "pydantic-settings" },
+    { name = "pytest" },
     { name = "sqlalchemy" },
     { name = "structlog" },
     { name = "uvicorn", extra = ["standard"] },
@@ -2222,15 +2297,18 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "alembic", specifier = ">=1.13" },
+    { name = "bs4", specifier = ">=0.0.2" },
     { name = "duckdb", specifier = ">=1.5.5" },
     { name = "fastapi", specifier = ">=0.115" },
     { name = "httpx", specifier = ">=0.27" },
+    { name = "httpx2", specifier = ">=2.9.1" },
     { name = "langgraph", specifier = ">=0.2.28" },
     { name = "matplotlib", specifier = ">=3.11.1" },
     { name = "openpyxl", specifier = ">=3.1.5" },
     { name = "pandas", specifier = ">=3.0.5" },
     { name = "pydantic", specifier = ">=2.7" },
     { name = "pydantic-settings", specifier = ">=2.3" },
+    { name = "pytest", specifier = ">=9.1.1" },
     { name = "sqlalchemy", specifier = ">=2.0" },
     { name = "structlog", specifier = ">=24.1" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.30" },
