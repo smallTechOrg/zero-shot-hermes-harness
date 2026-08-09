@@ -3,7 +3,8 @@
 # install-hermes-skills.sh
 # -----------------------------------------------------------------------------
 # Install the zero-shot-hermes-harness skills into a LOCAL Hermes install so the
-# harness stays OUT of your agent codebases.
+# harness stays OUT of your agent codebases. (See README "Install into a local
+# Hermes" for usage + invocation.)
 #
 # What it does (idempotent — safe to re-run):
 #   1. Copies harness/skills/{zero-shot-build,zero-shot-fix,zero-shot-sync}

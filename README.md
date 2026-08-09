@@ -109,6 +109,29 @@ skills:
 *Optional:* `uv sync && uv run python agent.py` runs a doctor over the baseline (deps, `.env`,
 app, unit tests). Not required to build.
 
+### Install into a local Hermes (harness stays out of your codebase)
+
+If you'd rather not keep the harness inside each agent repo, the install script
+copies the three skills into your Hermes install and wires them to a single
+shared copy of the roles/patterns/rules — fully self-contained, no `harness/`
+dir needed at your project root:
+
+```bash
+bash install-hermes-skills.sh                # install into ~/.hermes/skills
+bash install-hermes-skills.sh --uninstall    # remove
+```
+
+Then invoke with slash commands in any Hermes session (restart Hermes once after
+installing so it picks up the new skills):
+
+```
+/zero-shot-build <idea>
+/zero-shot-fix <bug | error | "tests" | "drift">
+/zero-shot-sync [scope]
+```
+
+Re-run the script after pulling harness updates to refresh the local copies.
+
 ## What Happens
 
 ```
