@@ -1,11 +1,16 @@
 ---
 name: zero-shot-fix
-description: Diagnose and fix a problem in an existing project — a bug description, a runtime error/stack trace, failing tests, or spec/code drift — then verify the fix. Calls the worker roles directly; runs autonomously to a verified result.
+description: Diagnose and fix a bug, runtime error, failing test, or spec/code drift in an existing project, then verify the fix.
 argument-hint: [bug description / error / "tests" / "drift"]
 disable-model-invocation: true
 ---
 
-You are the ROOT SESSION orchestrating a targeted fix by running the specialist roles in `../../support/agents/` — delegated via your platform's mechanism (Claude Code: the Task tool / native sub-agents; Hermes: `delegate_task`) when available, **inline otherwise** (read the role file as a checklist; the fix never stalls waiting for a worker that can't spawn). Verify every handback: files exist, the gate was really run. The target is in `$ARGUMENTS`. **If `$ARGUMENTS` is empty, ask the user in plain text to describe what's broken — the bug, error, failing test, or drift — and WAIT for their free-text reply before doing anything else.** Do NOT use a question tool to solicit, suggest, or pick the problem — the problem statement must come from the user as their own text. Only once you have it do you proceed to Step 1. Run autonomously: diagnose+classify → fix → verify, looping until the failure signal is gone. Pause only on a hard blocker or explicit request.
+You are the ROOT SESSION orchestrating a targeted fix by running the specialist roles in `support/agents/` — delegated via your platform's mechanism (Claude Code: the Task tool / native sub-agents; Hermes: `delegate_task`) when available, **inline otherwise** (read the role file as a checklist; the fix never stalls waiting for a worker that can't spawn). Verify every handback: files exist, the gate was really run. The target is in `$ARGUMENTS`. **If `$ARGUMENTS` is empty, ask the user in plain text to describe what's broken — the bug, error, failing test, or drift — and WAIT for their free-text reply before doing anything else.** Do NOT use a question tool to solicit, suggest, or pick the problem — the problem statement must come from the user as their own text. Only once you have it do you proceed to Step 1. Run autonomously: diagnose+classify → fix → verify, looping until the failure signal is gone. Pause only on a hard blocker or explicit request.
+
+> **Shared material** is referenced as `support/…` — the harness's shared tree, two levels
+> up from this file (`skills/<name>/SKILL.md` -> `support/`) in the repo checkout, the
+> Hermes tap, and the installed Claude plugin. For a per-skill Hermes install, the README
+> says how to place it at `~/.hermes/support`.
 
 **qa-auditor runs FIRST** — it diagnoses, captures the failing signal, and CLASSIFIES the root cause (SPEC vs CODE, and which surface). Its verdict ROUTES the fix and names the surface. Fixing happens in the **code-generator** role (one invocation per named surface, per the project's declared layout in `spec/architecture.md` — e.g. backend source and/or frontend); judging happens in read-only **qa-auditor**; you (the root session) own the commit + push.
 
@@ -54,4 +59,4 @@ Invoke **qa-auditor** in full gate mode (real keys from `.env`, full suite + E2E
 
 ## Step 4 — Ship + report
 
-Commit + push the fix yourself (atomic `git commit … && git push`, staging only the changed files, per `../../support/rules/git.md`). Summarize: classification (SPEC/CODE + surface), root cause (1–2 sentences), files changed, the regression test added, the verified before→after, and the pushed SHA.
+Commit + push the fix yourself (atomic `git commit … && git push`, staging only the changed files, per `support/rules/git.md`). Summarize: classification (SPEC/CODE + surface), root cause (1–2 sentences), files changed, the regression test added, the verified before→after, and the pushed SHA.

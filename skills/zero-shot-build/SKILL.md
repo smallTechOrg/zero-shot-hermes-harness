@@ -1,6 +1,6 @@
 ---
 name: zero-shot-build
-description: Turn a zero-shot idea into a perfectly-working, thoroughly-tested, spec-driven project — AI-natively designed on whatever stack the requirements pick. One deep intake (which also collects any API keys into .env), then the build runs one phase at a time — autonomous within a phase, with a human testing gate between phases. Also used to add a new capability to an existing project.
+description: Build a spec-driven, phased project from a one-line idea — autonomous within a phase, human testing gate between phases. Also adds a capability to an existing project.
 argument-hint: [your idea]
 disable-model-invocation: true
 ---
@@ -20,7 +20,7 @@ platform is only *how the work is delegated*:
 - **Hermes** — there is no orchestrator sub-agent (delegated workers cannot spawn their
   own workers, cannot talk to the user, and their background processes are killed on
   return). You orchestrate directly: delegate *leaf work* (spec-writing, one code slice,
-  one audit) to the roles in `../../support/agents/` via `delegate_task` when available,
+  one audit) to the roles in `support/agents/` via `delegate_task` when available,
   **inline otherwise**. Ask via `clarify`, plain text as fallback. Platform sharp edges:
   `references/hermes-pitfalls.md`.
 
@@ -28,15 +28,16 @@ The idea is in `$ARGUMENTS`. **If `$ARGUMENTS` is empty, ask the user in plain t
 describe their idea and WAIT for their free-text reply.** Never use a question tool to
 solicit or suggest the idea itself — the idea must come from the user as their own text.
 
-**Shared material** resolves relative to this file: `../../support/…` (true for the repo
-checkout, the Hermes tap, and the installed Claude plugin). If that path is absent (a
-per-skill Hermes install), the README's install section says how to place the repo's
-`support/` tree at `~/.hermes/support` so these references resolve.
+**Shared material** lives in the harness's `support/` tree, referenced below as
+`support/…`. It sits two levels up from this skill file in the repo checkout, the Hermes
+tap, and the installed Claude plugin (`skills/<name>/SKILL.md` -> `support/`). For a
+per-skill Hermes install, the README's install section says how to place that `support/`
+tree at `~/.hermes/support` so these references resolve.
 
-**Permissions preflight (Claude Code):** before Stage 2, check the target project's
-`.claude/settings.json` grants the harness's autonomy preset (broad Edit/Write/Read/Bash
-allow — see the README's "Autonomy setup" section). If it doesn't, tell the user in one
-line that the build will stall on permission prompts and point them at that section —
+**Permissions preflight (Claude Code):** before Stage 2, confirm the target project
+grants the harness's autonomy preset (broad Edit/Write/Read/Bash allow — see the
+Claude Code autonomy guide linked from the README). If it doesn't, tell the user in one
+line that the build will stall on permission prompts and point them at that guide —
 then continue; never silently stop.
 
 Goal: **one prompt → a perfectly-working, thoroughly-tested product, one user-testable
@@ -67,7 +68,7 @@ the spec designs the layout and the scaffold gate proves it runs before any feat
    is NOT done. A worker that returned at "95% done" is normal — **you finish the
    remainder inline**; never re-delegate the same 5%.
 3. **Fall back inline.** If delegation is unavailable, errors out, or stalls: read the
-   role file (`../../support/agents/<role>.md`) and execute it yourself as a checklist,
+   role file (`support/agents/<role>.md`) and execute it yourself as a checklist,
    in the same order the delegated version would run. The build NEVER stalls waiting for
    a worker that cannot spawn. Inline is a *normal* mode, not a failure.
 
@@ -224,27 +225,28 @@ as assumptions.)
    invocation; Hermes: delegate or inline) with the brief. It writes the full spec:
    capabilities, `spec/architecture.md` (`## Stack` with rationale + `## Layout` +
    `## Conventions`), **`spec/agent.md` — ALWAYS** (the AI-native design lens: patterns
-   chosen from `../../support/patterns/agentic-ai.md`, or the written conclusion "no AI
+   chosen from `support/patterns/agentic-ai.md`, or the written conclusion "no AI
    capability needed"), and the phased plan in `spec/roadmap.md` (per phase: Goal ·
    independent slices · key files · the exact runnable Gate command · how the user tests
    it). **Verify on handback**: no `<!-- FILL IN -->` left, every phase has a runnable
    gate, `spec/agent.md` exists and is complete (composition OR reasoned "no"). Surface
    its `Assumed:` flags to the user in your next message (don't wait on them).
-2. **SCAFFOLD** — git per `../../support/rules/git.md`:
+2. **SCAFFOLD** — git per `support/rules/git.md`:
    - **Clean-baseline precheck (do this FIRST).** A fresh build must not inherit a prior
      build: if the current branch already carries a *different* project's filled `spec/`
      or app tree, STOP and confirm with the user before continuing. (A live run inherited
      an old ASP.NET+MSSQL spec this way and tried `dotnet`/Docker on a Python box.)
      An existing spec is fine when the user asked to ADD a capability to this project.
-   - `base=$(git rev-parse --abbrev-ref HEAD)` — capture `<base>` BEFORE branching; never
-     `git checkout main` first.
-   - `name="feature/<slug>-$(date +%Y%m%d-%H%M)-v0.1"` — the date-time slug makes it
-     unique. Before creating it, `git ls-remote --heads origin "$name"`; if it somehow
-     exists, bump the timestamp. **Never `git checkout` an existing feature branch to
-     build into** — that imports the prior build's stack. Then `git checkout -b "$name"`.
+   - Capture the current branch as `<base>` BEFORE branching (read it from
+     `git rev-parse --abbrev-ref HEAD`); never `git checkout main` first.
+   - Create a uniquely-named build branch `feature/<slug>-<YYYYMMDD-HHMM>-v0.1` — the
+     date-time slug makes it unique. Before creating it, check it is free on the remote
+     (`git ls-remote --heads origin "<name>"`); if it somehow exists, bump the timestamp.
+     **Never `git checkout` an existing feature branch to build into** — that imports the
+     prior build's stack. Then create it with `git checkout -b "<name>"`.
    - **Build the scaffold** — the minimal runnable skeleton the spec's `## Layout`
      defines (code-generator role, scaffold slice), then run the **scaffold gate**
-     (`../../support/patterns/phases.md`): deps install, app boots via its documented run
+     (`support/patterns/phases.md`): deps install, app boots via its documented run
      command, smoke test green, migration tool wired if there's a DB, key validated.
      Write `.env.example` documenting every env var.
    - First commit + push, then open the PR immediately: `gh pr create --base "$base"` —
