@@ -1,16 +1,23 @@
 # AI Agent Rules
 
-**These rules apply to every Hermes session in this repo.**
+**These rules apply to every session driving a zero-shot build, fix, or sync — on any
+platform (Claude Code, Hermes, or any Agent-Skills-compatible tool).**
 
 Read this file completely before doing anything else.
 
-**The Hermes execution model (governs every build):** the ROOT SESSION is the orchestrator —
-it alone owns the human channel (`clarify` + plain-text fallback), git/PR, and the server
-lifecycle. The specialist roles in `support/agents/` (spec-writer, code-generator,
-qa-auditor) run via `delegate_task` when available and **inline otherwise** — the root reads
-the role file as a checklist. Delegated workers cannot spawn workers, cannot ask the user,
-may return early (the root verifies every handback and finishes remainders), and their
-background processes die on return.
+**The execution model (governs every build):** the ROOT SESSION owns the human channel
+(questions + testing gates), git/PR, and the server lifecycle. The specialist roles in
+`../agents/` (spec-writer, code-generator, qa-auditor) run via the platform's
+delegation mechanism when available and **inline otherwise** — the root reads the role
+file as a checklist. Delegated workers cannot ask the user, may return early (the root
+verifies every handback and finishes remainders), and their background processes die on
+return — only the root serves.
+
+- **Claude Code:** roles are native sub-agents (spawned via the Task tool); a build is
+  additionally coordinated by the **project-builder** orchestrator sub-agent, one phase
+  per invocation. The root session still owns the human gates and the live server.
+- **Hermes:** roles run via `delegate_task` (leaf work only — workers cannot spawn
+  workers) or inline. There is no orchestrator sub-agent; the root orchestrates.
 
 ---
 
@@ -20,23 +27,23 @@ These rules are never optional, never skipped, and must survive context compress
 
 1. **README must always be accurate.** Every command in the README must work exactly as written, from the directory stated. Before ending any session or marking any phase complete: run the README commands yourself — if any fail, fix the README first. A README that lies is worse than no README.
 
-2. **Never claim a test passed if you didn't run it.** "It should work" is not a passing test. Run `pytest` (or equivalent). Show the output. If you can't run it, say so — do not fabricate results.
+2. **Never claim a test passed if you didn't run it.** "It should work" is not a passing test. Run the suite (pytest, vitest, `go test`, …). Show the output. If you can't run it, say so — do not fabricate results.
 
-3. **All commands in docs use the package manager prefix.** For Python + uv projects: every `alembic`, `pytest`, `python` command in the README and docs must be prefixed with `uv run`. Bare commands (e.g. `alembic upgrade head`) fail unless the venv is manually activated — which users won't do.
+3. **All commands in docs use the stack's runner prefix.** Every migration/test/run command in the README and docs must carry the prefix that makes it work without manual environment activation (e.g. `uv run` for Python+uv, `npx` for Node, `bun` for Bun). Bare commands fail unless the user activated an environment — which they won't.
 
 4. **Working directory must be explicit.** Any README or doc section with shell commands must state the exact working directory at the top of the code block. "Run from project root" is not enough — give the exact relative path from the repo root.
 
-5. **No SQLite substitute for PostgreSQL tests.** If the production database is PostgreSQL, tests run against PostgreSQL. Tests that only pass on SQLite do not count as passing.
+5. **Tests run on the production database engine.** If production is PostgreSQL, tests run against PostgreSQL — a suite that only passes on a lighter stand-in does not count as passing.
 
-6. **Golden-path UI smoke test is mandatory before Phase 2 passes.** If the project has any UI or HTTP surface, Phase 2 must include an automated test that walks the full primary user journey end-to-end against the **real LLM/API** (keys from `.env`) via `TestClient` (or equivalent) and asserts **response content**, not just status codes. A build that returns 200 but renders a broken-looking page is a failing build. Edge-case and end-to-end coverage of the journey are required, not optional.
+6. **Golden-path UI smoke test is mandatory before Phase 2 passes.** If the project has any UI or HTTP surface, Phase 2 must include an automated test that walks the full primary user journey end-to-end against the **real external services the spec names** (the real LLM/API when the design has AI capability — keys from `.env`) and asserts **response content**, not just status codes. If the journey is JS-driven in the browser (including a zero-build static app whose primary flow runs through its JS), the smoke is a headless-browser run; HTTP-client assertions alone gate only server-rendered/static pages with no JS on the tested path. A build that returns 200 but renders a broken-looking page is a failing build. Edge-case and end-to-end coverage of the journey are required, not optional.
 
-7. **Tests and evals run against the real LLM/API using keys loaded from `.env`.** There is no offline-passing requirement; real-key execution is the default and required path for every gate, against the production DB driver (never SQLite if production is PostgreSQL). A stub provider MAY exist as an optional local fallback when a key is genuinely absent, but it is never the gate. The quality bar is perfect, zero errors — edge-case, end-to-end, and UI tests are required, not optional. The gate must exercise the **hard, idiomatic inputs the capability promises** and push the **real LLM's hard outputs through every guard** on the user's path — not just one easy happy-path example (see `support/patterns/test-driven.md` → "Gate Tests Must Cover the Capability's Hard Cases").
+7. **Tests and evals run against the real external services the spec names, using keys loaded from `.env`** — the real LLM/API whenever `spec/agent.md` gives the project AI capability, the production database engine always. There is no offline-passing requirement; real-key execution is the default and required path for every gate. (A project whose `spec/agent.md` concluded "no AI capability needed" has no LLM gate — a missing LLM key is then not a blocker.) A stub provider MAY exist as an optional local fallback when a key is genuinely absent, but it is never the gate. The quality bar is perfect, zero errors — edge-case, end-to-end, and UI tests are required, not optional. The gate must exercise the **hard, idiomatic inputs the capability promises** and push the **real service's hard outputs through every guard** on the user's path — not just one easy happy-path example (see `../patterns/test-driven.md` → "Gate Tests Must Cover the Capability's Hard Cases").
 
-8. **Every commit must be pushed immediately.** `git commit -m "..." && git push origin <branch>` is one indivisible action — a commit that isn't pushed doesn't exist. See `support/rules/git.md`.
+8. **Every commit must be pushed immediately.** `git commit -m "..." && git push origin <branch>` is one indivisible action — a commit that isn't pushed doesn't exist. See `git.md`.
 
-9. **`main` is boilerplate-only — ABSOLUTELY. Nothing a `/zero-shot-build` run produces (application code, generated features, phase output) ever reaches `main`.** App code lives on a feature branch cut from the current HEAD and is PR'd back into *that branch* (`--base $base`), never `main`. If you merge a build and its base is `main`, you violated this rule — `git revert` the merge and push. Only support/spec/boilerplate improvements reach `main`, via a *separate, explicitly-reviewed* PR — never as a side effect of a build. See `support/rules/git.md`.
+9. **Builds never land on the default branch directly.** Everything a `/zero-shot-build` run produces lives on a feature branch cut from the current HEAD and is PR'd back to *the branch it was cut from* (`--base $base`) — never committed straight to `main`/`master`. The user merges PRs; the build never merges its own. See `git.md`.
 
-10. **A PR must exist before the first feature-branch commit.** Open it right after the first push, **based on the branch you cut from** (`gh pr create --base "$base" --head feature/<slug>-<YYYYMMDD-HHMM>-v0.1`, where `$base` is the HEAD captured before `checkout -b`); every later push updates it. See `support/rules/git.md`.
+10. **A PR must exist before the first feature-branch commit.** Open it right after the first push, **based on the branch you cut from** (`gh pr create --base "$base" --head feature/<slug>-<YYYYMMDD-HHMM>-v0.1`, where `$base` is the HEAD captured before `checkout -b`); every later push updates it. See `git.md`.
 
 ---
 
@@ -58,25 +65,27 @@ Complete all steps in order before writing any code:
 
 - [ ] Read `spec/roadmap.md` — know what you're building
 - [ ] Check if the spec is complete (no `<!-- FILL IN -->` markers in product spec files)
-  - If incomplete: tell the user to run `/zero-shot-build`; do not write application code
-- [ ] If spec is complete: read the full spec manifest in `AGENTS.md`
+  - If there is no `spec/` yet, or it is incomplete: tell the user to run `/zero-shot-build`; do not write application code
+- [ ] If spec is complete: read the full spec manifest (roadmap, architecture, capabilities, data, api, ui, agent) plus these rules and the patterns
 - [ ] Run `git status` — working tree must be clean before starting
-- [ ] **Branch from the current HEAD**: `base=$(git rev-parse --abbrev-ref HEAD)` then `git checkout -b feature/<slug>-$(date +%Y%m%d-%H%M)-v0.1` (the date-time slug keeps the branch name unique) — branch from wherever you are so the build dogfoods THIS harness version; never `git checkout main` first (see `support/rules/git.md`)
-- [ ] **The repo root IS the project** — extend the baseline `src/` and `frontend/public/` in place (`support/patterns/project-layout.md`); never write app code at the repo root, never create a second package beside `src/`
-- [ ] Confirm `.env` exists and contains the required API keys/secrets (requested at intake) — tests and the build run against the real LLM/API using these keys
-- [ ] Confirm which phase you are implementing (see `support/patterns/phases.md`)
+- [ ] **Branch from the current HEAD**: `base=$(git rev-parse --abbrev-ref HEAD)` then `git checkout -b feature/<slug>-$(date +%Y%m%d-%H%M)-v0.1` (the date-time slug keeps the branch name unique) — never `git checkout main` first (see `git.md`)
+- [ ] **Extend the scaffold in place** per `spec/architecture.md` (`## Layout`) and `../patterns/project-layout.md` — never write app code at the repo root, never create a second package beside the source root
+- [ ] Confirm `.env` exists and contains the keys the spec requires, if any (requested at intake) — tests and the build run against the real external services using these keys
+- [ ] Confirm which phase you are implementing (see `../patterns/phases.md`)
 
 ## 2. Build Flow
 
-The goal is: **one prompt → a perfectly-working, thoroughly-tested agent, delivered one user-testable phase at a time.** Intake is the only interactive setup step. After it, the build is autonomous *within* a phase, with a **human testing gate between phases** — the user tests each phase before the next one starts.
+The goal is: **one prompt → a perfectly-working, thoroughly-tested product, delivered one user-testable phase at a time.** Intake is the only interactive setup step. After it, the build is autonomous *within* a phase, with a **human testing gate between phases** — the user tests each phase before the next one starts.
 
 ```
-INTAKE (capture scope, stack, trigger, constraints; ask additional clarifying
+INTAKE (capture scope, constraints, stack preferences; ask additional clarifying
         questions up front if anything is ambiguous; request the user fill .env
         with the required API keys/secrets)
         ↓
-BUILD PHASE N (spec + architecture + agent + roadmap on the first phase, then
-       implement the phase; gated by passing real-key tests) → publish the
+DESIGN + SCAFFOLD (full spec incl. spec/agent.md — the AI-native lens — then the
+       minimal runnable skeleton on the chosen stack, proven by the scaffold gate)
+        ↓
+BUILD PHASE N (implement the phase; gated by passing real-key tests) → publish the
        phase test-handoff
         ↓
 HUMAN TESTING GATE (the user tests the phase; on Yes → next phase, on issue →
@@ -88,11 +97,12 @@ BUILD PHASE N+1 … (repeat at every phase boundary)
 **TIGHT SCOPE FOR QUICK WINS / FIRST-TIME-RIGHT:** Phase 1 is the *smallest* user-testable win and must work the first time the user tests it — zero rough edges on the tested path. The frontend builds in parallel and may include clearly-labelled non-functional stubs so the user sees the vision; a stub must never be mistaken for a bug. The user must never have to debug what we hand them.
 
 **Rules that never change:**
-- Stack decisions (database, language, hosting) belong to the user — captured at intake, never chosen autonomously.
+- User stack preferences captured at intake are **BINDING**. Where intake is silent ("no preference" / "you decide"), the spec-writer derives the best-fit stack from the requirements and records it with rationale as `> **Assumed:** …` in `spec/architecture.md` — there is no default stack, and the choice is never re-litigated mid-build.
+- `spec/agent.md` is written for **every** project — the AI-native design lens; "no AI capability needed" is a legitimate written conclusion, a missing file is not.
 - Filling `.env` is the only manual user step, requested at intake.
 - Each build phase must pass its gate against the real LLM/API before the next phase starts.
 - The human tests each phase before the next one starts — that is the gate between phases.
-- spec-writer self-reviews its spec (architecture + agent-graph + roadmap), frontend and backend generators build independent slices in parallel, and qa-auditor independently gates each phase.
+- spec-writer self-reviews its spec (architecture + agent design + roadmap), generators build independent slices in parallel, and qa-auditor independently gates each phase.
 
 ```
 [Phase implemented] → [real-key gate passes] → [committed] → [human tests] → [next phase]
@@ -110,7 +120,7 @@ If you are asked to implement something not in the spec:
 3. Propose adding it to the spec first
 4. Wait for approval before writing code
 
-See `support/patterns/spec-driven.md` for full details.
+See `../patterns/spec-driven.md` for full details.
 
 ## 4. Phase Discipline
 
@@ -119,14 +129,14 @@ See `support/patterns/spec-driven.md` for full details.
 Each phase ends when:
 - All code for that phase is written and committed
 - All tests for that phase pass
-- The qa-auditor sub-agent has returned VERIFIED (or you have run the gate checklist manually)
+- The qa-auditor role has returned VERIFIED (or you have run the gate checklist manually)
 - **README is updated** to reflect what this phase added — any new setup steps, commands, endpoints, or environment variables must be accurate and runnable before the gate is declared passed (Rule 1 applies at every phase boundary, not just at session close)
 
-See `support/patterns/phases.md` for the phase definitions and gates.
+See `../patterns/phases.md` for the phase definitions and gates.
 
 ## 5. Git Discipline
 
-See `support/rules/git.md` for the full rules. Summary:
+See `git.md` for the full rules. Summary:
 
 - Commit every logical unit of work — never let the working tree stay dirty for more than one logical change
 - **Push immediately after every commit** — `git commit -m "..." && git push origin <branch>` is one indivisible action
@@ -151,9 +161,9 @@ A phase is not done until all tests pass against the real LLM/API. "It looks rig
 ## 7. Error Resilience
 
 Every external call (API, database, LLM) must have:
-- Error handling that doesn't crash the agent
+- Error handling that doesn't crash the app
 - Logged failures (to file or stdout at minimum)
-- Graceful degradation (the agent continues if a non-critical step fails)
+- Graceful degradation (the system continues if a non-critical step fails)
 
 Surface a clear, actionable error when an API key is missing or invalid (point the user at `.env`) — never silently fall back in a way that hides a real failure during tests.
 

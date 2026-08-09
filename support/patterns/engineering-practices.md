@@ -64,7 +64,7 @@ Rules that apply to every implementation phase, regardless of stack or project t
 
 **Principle of least privilege.** Each component, service account, and API token should have only the permissions it needs — nothing more.
 
-**Secrets are never in code.** No API keys, passwords, or tokens in source files, even in test fixtures. The real key lives in `.env` (the single manual user step, filled at intake), gitignored and loaded programmatically for tests/evals via `python-dotenv` / the config loader — never hardcoded, echoed, or committed. Confirm a key by presence (bool) only. See `support/rules/secret-hygiene.md`.
+**Secrets are never in code.** No API keys, passwords, or tokens in source files, even in test fixtures. The real key lives in `.env` (the single manual user step, filled at intake), gitignored and loaded programmatically for tests/evals via the stack's env-file loader / config loader (e.g. `python-dotenv`) — never hardcoded, echoed, or committed. Confirm a key by presence (bool) only. See `../rules/secret-hygiene.md`.
 
 **Parameterised queries only.** Never construct SQL (or any query language) from user-supplied strings. Use the ORM or parameterised query interface without exception.
 
@@ -86,7 +86,7 @@ Rules that apply to every implementation phase, regardless of stack or project t
 
 ## Git and code review
 
-See `support/rules/git.md` for the full git rules. The quality principles that belong here:
+See `../rules/git.md` for the full git rules. The quality principles that belong here:
 
 **Commits are logical units.** Each commit should be a self-contained, reviewable change. "Fix bug and refactor and add feature" is three commits.
 

@@ -1,20 +1,20 @@
 # Git Discipline
 
-All git rules that apply to every Hermes session in this repo. Only the ROOT SESSION runs git — delegated workers never commit, push, or branch.
+All git rules that apply to every session driving a build, fix, or sync — on any platform. Only the ROOT SESSION (or, on Claude Code, the project-builder orchestrator it delegates git to) runs git — other delegated workers never commit, push, or branch.
 
 ---
 
 ## Branch Model
 
-- **`main` is boilerplate-only — ABSOLUTELY.** Nothing built by a `/zero-shot-build` run — no application code, no generated feature, no phase output — ever reaches `main`. The default branch is reserved for support/spec/boilerplate improvements only, and those land via a *separate, explicitly-reviewed* PR, never as a side effect of merging a build. If you merge a feature branch and its `--base` is `main`, you have violated this rule.
-- **The build's PR targets `<base>` (the branch it was cut from), NOT `main`.** Open it with `--base "$base"` so the generated app stays isolated on the feature branch and **dogfood output never lands on `main`**. A build that merges to `main` is a failed build — revert it (see below).
+- **Builds never land on the default branch directly.** Nothing a `/zero-shot-build` run produces — no application code, no generated feature, no phase output — is ever committed straight to `main`/`master`. Everything lands on a feature branch and reaches the default branch only through a PR **the user merges** — the build never merges its own PR.
+- **The build's PR targets `<base>` (the branch it was cut from), NOT `main`.** Open it with `--base "$base"` so the generated increment stays isolated and reviewable on its own branch. If `<base>` IS the default branch (the normal case in a user's own project), the PR simply targets it — the point is the user reviews and merges, never the build.
 - **Branch names carry a date-time slug so they are always unique.** Use `feature/<slug>-$(date +%Y%m%d-%H%M)-v0.1` — the timestamp guarantees no clash with branches from earlier runs, local or remote. **Before creating it, check the name is free on origin** (`git ls-remote --heads origin "$name"`); if it somehow exists, bump the timestamp. **Never `git checkout` an existing feature branch to build into** — reusing a prior build's branch imports that build's spec and stack (a live run reused `feature/up-police-data-analyst-v0.1` and inherited an old ASP.NET+MSSQL project, then tried `dotnet`/Docker on a Python box).
-- **Start every build from a clean boilerplate baseline.** Before scaffolding, confirm `spec/` still has `<!-- FILL IN -->` markers and no app/agent output dir already exists. If either is already populated, you are on a prior build's branch — stop and confirm with the user; do not silently continue.
+- **Start every fresh build from a clean baseline.** Before scaffolding, confirm the branch you're on doesn't already carry a *different* build's spec or app tree. An existing filled `spec/` is fine when you're intentionally adding a capability to that project; it is contamination when you're starting a new build — in that case stop and confirm with the user; do not silently continue on a prior build's branch.
 - **Never `git checkout`/switch branches over a dirty tree.** Commit or stash first — uncommitted `spec/` edits cause "local changes would be overwritten by checkout" and the switch fails mid-build.
-- **Branch every build from the CURRENT HEAD.** Capture where you are first: `base=$(git rev-parse --abbrev-ref HEAD)` — call it `<base>` — then `git checkout -b feature/<slug>-$(date +%Y%m%d-%H%M)-v0.1` from there. Never `git checkout main` first. A build dogfoods the harness version on the branch you are on (e.g. `v0.4.0`, `v1`); branching from `main` would silently test the wrong (stale) harness.
-- All phase commits go to the feature branch, never to `main`.
-- If you find yourself on `main` while writing application code, stop immediately, create the feature branch, and continue there.
-- **Accidental merge to `main`? Revert, don't panic.** If app code reaches `main`, fix it with `git revert <sha>` (never force-push/rewrite shared history) and push. The feature-branch copy remains the canonical source. Document the revert in the PR.
+- **Branch every build from the CURRENT HEAD.** Capture where you are first: `base=$(git rev-parse --abbrev-ref HEAD)` — call it `<base>` — then `git checkout -b feature/<slug>-$(date +%Y%m%d-%H%M)-v0.1` from there. Never `git checkout main` first — the user parked this session on the branch they want built against; silently switching to the default branch builds against the wrong base.
+- All phase commits go to the feature branch, never to the default branch.
+- If you find yourself on the default branch while writing application code, stop immediately, create the feature branch, and continue there.
+- **Accidental commit to the default branch? Revert, don't panic.** Fix it with `git revert <sha>` (never force-push/rewrite shared history) and push. The feature-branch copy remains the canonical source. Document the revert in the PR.
 
 
 ---
@@ -82,7 +82,7 @@ The diff shows the *what*. The message answers: *why was this change needed, and
 
 - **Commits are logical units.** Each commit should be a self-contained, reviewable change. "Fix bug and refactor and add feature" is three commits.
 - **No commented-out code in commits.** If code is not needed, delete it. Git history preserves it.
-- **Never commit secrets** — no API keys, passwords, or tokens in source files. See `support/rules/secret-hygiene.md`. The `.env` containing API keys is the only manual user step and must stay gitignored — `.env.example` is committed, `.env` is never staged.
+- **Never commit secrets** — no API keys, passwords, or tokens in source files. See `secret-hygiene.md`. The `.env` containing API keys is the only manual user step and must stay gitignored — `.env.example` is committed, `.env` is never staged.
 - **Never force-push without explicit user confirmation.**
 
 ---

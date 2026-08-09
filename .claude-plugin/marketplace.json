@@ -1,0 +1,20 @@
+{
+  "name": "zero-shot-harness",
+  "metadata": {
+    "description": "Spec-first, AI-native harness for building projects: skills, a four-agent build team, and engineering patterns and rules."
+  },
+  "owner": {
+    "name": "smallTechOrg"
+  },
+  "plugins": [
+    {
+      "name": "zero-shot-harness",
+      "description": "Turn a one-line idea into a working, tested, phased project. Spec is the source of truth; every design runs through the AI-native lens; a human gates every phase.",
+      "author": {
+        "name": "smallTechOrg"
+      },
+      "category": "development",
+      "source": "./"
+    }
+  ]
+}

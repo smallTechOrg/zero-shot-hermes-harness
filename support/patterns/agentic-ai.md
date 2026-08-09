@@ -1,6 +1,16 @@
 # Agentic-AI Patterns
 
-The reusable catalogue of agentic design patterns — generic engineering doctrine, not a project's design. The spec-writer picks the minimal set a project actually needs and records the concrete composition in [`spec/agent.md`](../../spec/agent.md), citing the patterns chosen here. Prefer the simplest pattern that works: do not reach for multi-agent when a single tool-use loop suffices.
+The reusable catalogue of agentic design patterns — generic engineering doctrine, not a project's design.
+
+**The AI-native lens (applies to every project).** Every spec includes `spec/agent.md`, written by the spec-writer for every build — not only "AI projects". The spec-writer evaluates the idea against this catalogue and answers, in writing: *which of these patterns would make this product genuinely better, and which does it actually need now?* Three legitimate outcomes:
+
+1. **AI capabilities are core** — the file documents the chosen patterns and the concrete composition (state, nodes, edges, error handling), citing the patterns here.
+2. **AI augments the product** — a conventional app with specific AI-powered capabilities; the file documents just those compositions and marks the rest of the product as conventional.
+3. **No AI capability needed** — the file says so explicitly, with one line of rationale per considered-and-rejected opportunity. A written "no" is a design decision; a missing file is a design hole.
+
+The lens is about the **product being built**; the build *process* is always agentic regardless (multi-role team, parallel slices, independent gates — see the skills).
+
+Prefer the simplest pattern that works: do not reach for multi-agent when a single tool-use loop suffices.
 
 ---
 
@@ -117,11 +127,16 @@ The reusable catalogue of agentic design patterns — generic engineering doctri
 
 ## Choosing patterns
 
-**The default architecture is a ReAct loop.** Unless the task is a single deterministic transform with no branching, the baseline for "an agent" is a **ReAct loop** (#17 + #5): **reason → act via a tool → observe → repeat until done** — wrapped with guardrails (#18) and observability (#19) always on. That is the floor, not a single-shot `prompt → answer`. A linear prompt chain (#1) is a step *down* from this floor — pick it only when there are genuinely no tools and no branching.
+**Step 0 — does this project need AI capability at all?** If deterministic logic fully
+serves the requirements, the correct design is NO LLM — record "no AI capability needed"
+in the project's `spec/agent.md` with the rationale, and stop here. An LLM bolted onto a
+problem a function solves is cost, latency, and nondeterminism with no product upside.
+
+**For any AI capability the spec keeps, the default architecture is a ReAct loop.** Unless the task is a single deterministic transform with no branching, the baseline for an AI capability is a **ReAct loop** (#17 + #5): **reason → act via a tool → observe → repeat until done** — wrapped with guardrails (#18) and observability (#19) always on. That is the floor, not a single-shot `prompt → answer`. A linear prompt chain (#1) is a step *down* from this floor — pick it only when there are genuinely no tools and no branching.
 
 - **Start at ReAct, not below it.** A tool-use loop with good prompts and structured logging is the smallest *real* agent. Wire it in Phase 1 and measure.
 - **Reach up only on a concrete need.** Planning (#6), reflection (#4), multi-agent (#7), and heavy reasoning add latency and cost — upgrade them in Phase 4, never up front.
 - **Reach down only when there are no tools.** If the task is a fixed transform with no actions to take, a prompt chain (#1) or a single call is correct — don't bolt a loop onto a one-shot.
 - **Compose deliberately.** Patterns stack (e.g. planning + tool use + reflection); keep the set minimal and the data flow between them explicit.
 
-The chosen composition for **this** project — which patterns, wired how — is documented in [`spec/agent.md`](../../spec/agent.md).
+The chosen composition for a given project — which patterns, wired how (or the written conclusion that none are needed) — is documented in that project's `spec/agent.md`.

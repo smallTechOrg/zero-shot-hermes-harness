@@ -29,17 +29,20 @@ the build branch.
 - **Fix:** only the root session launches servers the user (or the smoke) will touch. A
   worker booting a server "for the handoff" hands the user a dead port.
 
-### 5. Pin the interpreter; boot before you hand off
-- **Fix:** launch with `.venv/bin/python -m src` — bare `python`/`uvicorn` can resolve to a
-  shared agent venv (silent `ModuleNotFoundError`). Before writing any handoff, actually
-  boot the server and hit `/health` — write only verified run commands and URLs.
+### 5. Pin the runtime; boot before you hand off
+- **Fix:** launch with the project's pinned, project-local runtime via its documented
+  entry command (Python example: `.venv/bin/python -m src` — a bare `python`/`uvicorn`
+  can resolve to a shared agent venv, silent `ModuleNotFoundError`). Before writing any
+  handoff, actually boot the app and verify liveness per its access model (web: hit
+  `/health`) — write only verified run commands and URLs.
 
-### 6. A stale dev DB turns a green suite into a live 500
+### 6. A stale dev store turns a green suite into a live 500
 - **Symptom:** tests pass (fresh tmp DB per test) but the live server 500s —
-  `table runs has no column named …`. `create_all` never ALTERs an existing table.
-- **Fix:** schema changed ⇒ ship the alembic migration in the same slice and apply it (or
-  recreate the dev DB) before the boot gate. The boot gate must exercise the same DB the
-  user will hit.
+  `table runs has no column named …`. Auto-create (`create_all`) never ALTERs an
+  existing table.
+- **Fix:** schema changed ⇒ ship the migration (via the stack's migration tool, e.g.
+  alembic) in the same slice and apply it (or recreate the dev DB) before the boot gate.
+  The boot gate must exercise the same store the user will hit.
 
 ### 7. Batch the LLM call — never loop per output line/token
 - **Symptom:** one call per generated line silently burned a real monthly spend cap
@@ -53,10 +56,11 @@ the build branch.
   building. On 401 mid-build: BLOCKED naming the env var — it's a user step, not a bug.
 
 ### 9. Re-verify cheaply — don't re-burn the live API
-- **Fix:** after mechanical edits, `py_compile` + `pytest --collect-only` proves imports
-  resolve. Reserve full real-key runs for first-green, logic changes, and pre-handoff.
-  Free-tier quotas (429) trip fast during builds — retry/backoff belongs in the generated
-  code, and cap your own test generations.
+- **Fix:** after mechanical edits, run the stack's cheapest static verification —
+  compile/typecheck + test collection (Python example: `py_compile` +
+  `pytest --collect-only`). Reserve full real-key runs for first-green, logic changes,
+  and pre-handoff. Free-tier quotas (429) trip fast during builds — retry/backoff
+  belongs in the generated code, and cap your own test generations.
 
 ### 10. At the human gate, the ROOT owns the run — multi-select, always
 - **Fix:** launch (pinned interpreter, free port, retry if busy) → live smoke (health + new
@@ -135,15 +139,16 @@ Evidence counts are from `~/.hermes/logs/agent.log*` across Jul 10–20 builds.
   Docker on a Python+uv machine: `dotnet: command not found`, `Microsoft.Data.SqlClient.
   SqlException`, `Unable to find application 'Docker'`. The branch name also had **no
   date-time slug**, so it collided instead of starting fresh.
-- **Fix (two guards, both in `../../support/rules/git.md` + Stage 2 scaffold):**
+- **Fix (two guards, both in `../../../support/rules/git.md` + Stage 2 scaffold):**
   1. **Unique branch, always.** Name every build branch `feature/<slug>-$(date +%Y%m%d-%H%M)-v0.1`
      and, before `checkout -b`, run `git ls-remote --heads origin "<name>"` — if it exists,
      the timestamp makes a new one. NEVER `git checkout` an existing feature branch to build
      into.
-  2. **Clean-baseline precheck.** Before scaffolding, assert the tree is a fresh boilerplate:
-     `spec/` still has `<!-- FILL IN -->` markers AND no app/agent output dir already exists.
-     If either is already populated, that's a prior build — STOP and confirm with the user;
-     never silently continue someone else's build on the wrong stack.
+  2. **Clean-baseline precheck.** Before scaffolding a fresh build, assert the branch
+     doesn't already carry a *different* project's filled `spec/` or app tree. If it
+     does, that's a prior build — STOP and confirm with the user; never silently
+     continue someone else's build on the wrong stack. (An existing spec is fine only
+     when the user asked to add a capability to that project.)
 
 ### 18. Long-lived servers: `terminal(background=true)`, never `&` / `nohup` / `setsid`
 - **Symptom:** recurred EVERY build (Jul 18/19/20). The agent tried a `&`-backgrounded
@@ -171,7 +176,9 @@ Evidence counts are from `~/.hermes/logs/agent.log*` across Jul 10–20 builds.
   double-`cd` from inside the repo). Separately it invoked `claude` (a Claude-Code-ism) →
   `claude: command not found`.
 - **Fix:** every `terminal` call starts fresh at the repo root — use absolute paths or chain
-  `cd <dir> && <cmd>` in ONE call; never rely on a prior `cd`. Assume only the project's own
-  toolchain exists (`uv`, `.venv/bin/python`); there is no `claude`/`dotnet`/`docker` unless
-  the spec's stack installed it. Commit or stash before any `git checkout` — a dirty tree
-  blocks the switch ("local changes would be overwritten by checkout").
+  `cd <dir> && <cmd>` in ONE call; never rely on a prior `cd`. Assume only the toolchain
+  recorded in `spec/architecture.md` `## Stack` exists on the box (on that run: `uv`,
+  `.venv/bin/python`); verify any other CLI before invoking it — there is no
+  `claude`/`dotnet`/`docker` unless the spec's stack installed it. Commit or stash before
+  any `git checkout` — a dirty tree blocks the switch ("local changes would be
+  overwritten by checkout").

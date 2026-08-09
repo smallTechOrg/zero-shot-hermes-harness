@@ -1,8 +1,11 @@
-# Project Layout — Canonical Structure
+# Project Layout — Principles
 
-All agents built from this boilerplate follow this layout exactly. **The layout below is not
-aspirational — it is the committed, working baseline in this repo.** `uv run pytest
-tests/unit -q` passes on a fresh clone; generators extend these files in place.
+Every project this harness builds follows the layout **the spec-writer designs for it** in
+`spec/architecture.md` (`## Layout`), honoring the principles below. There is no fixed
+skeleton and no default stack — the layout is derived from the chosen stack, then made
+real in the scaffold stage and verified by the scaffold gate (`phases.md`)
+**before** any feature slice is built. From that point on, generators extend the scaffold
+in place.
 
 ---
 
@@ -10,147 +13,86 @@ tests/unit -q` passes on a fresh clone; generators extend these files in place.
 
 Every generated project **must** have a README that:
 
-1. **States "all commands run from the repo root"** — the repo root IS the project. Put
-   this before any other content.
-2. **Prefixes all Python commands with `uv run`** — bare `alembic`/`pytest`/`python` fail
-   unless the venv is activated, which users won't do.
-3. **Includes `uv run alembic current` after `upgrade head`** — blank output = silent
-   failure; the user must be able to verify tables exist.
+1. **States the working directory for all commands** — put "all commands run from the
+   repo root" (or the exact directory) before any other content.
+2. **Uses the stack's runner prefix on every command** (e.g. `uv run`, `npx`, `bun`) —
+   bare commands fail unless an environment is manually activated, which users won't do.
+3. **Includes the verification command after every setup command** — e.g. after running
+   migrations, the command that proves they applied (blank output = silent failure). The
+   user must be able to verify the setup worked.
 4. **Stays accurate** — every README command is run before a phase is marked complete. A
    wrong README fails the build regardless of whether the code works.
 
 ---
 
-## Source Code Rule (Non-Negotiable)
+## Source Code Rules (Non-Negotiable)
 
-**All application source code lives inside `src/` (backend) or `frontend/public/`
-(frontend).** Never place application files at the repo root. The root is for project
-config (`pyproject.toml`, `alembic.ini`, `agent.py`, `README.md`, `.env.example`) and
-boilerplate infrastructure (`spec/`, `support/`, `AGENTS.md`).
-
-**One package only.** The skeleton ships the flat package `src/` (imported as `src`, run as
-`python -m src`). Extend it in place — never create a second package beside it, never copy
-it to a new name. Two packages = dead code + two sources of truth.
-
----
-
-## Directory Tree (the real baseline)
-
-```
-<repo root>                        ← repo root IS the agent project
-├── src/                           ← the Python package (import src, python -m src)
-│   ├── __init__.py                ← __version__
-│   ├── __main__.py                ← python -m src → uvicorn on PORT (default 8001)
-│   ├── api/
-│   │   ├── __init__.py            ← create_app() + lifespan (logging + init_db); mounts frontend at /app
-│   │   ├── _common.py             ← ok(), api_error() — the response envelope
-│   │   ├── health.py              ← GET /health (provider presence, never key values)
-│   │   └── runs.py                ← POST /runs, GET /runs/{id}
-│   ├── config/
-│   │   └── settings.py            ← BaseSettings, env prefix AGENT_, resettable singleton
-│   ├── db/
-│   │   ├── models.py              ← SQLAlchemy 2.0 declarative (Mapped types)
-│   │   └── session.py             ← engine/session singletons + init_db (resettable)
-│   ├── domain/
-│   │   └── run.py                 ← Pydantic request/response models
-│   ├── graph/                     ← LangGraph — THE CAPABILITY SLOT
-│   │   ├── state.py               ← AgentState TypedDict
-│   │   ├── nodes.py               ← transform_text (REPLACE), handle_error, finalize
-│   │   ├── edges.py               ← conditional routing
-│   │   ├── agent.py               ← StateGraph compiled once
-│   │   └── runner.py              ← run_agent() — creates row, invokes graph, persists
-│   ├── llm/
-│   │   ├── client.py              ← LLMClient wrapper + load_prompt()
-│   │   ├── retry.py               ← backoff on 429/5xx; actionable 401/404 errors
-│   │   └── providers/             ← httpx adapters, no SDKs
-│   │       ├── base.py            ← abstract LLMProvider + LLMError
-│   │       ├── factory.py         ← create_llm_provider() from settings
-│   │       ├── anthropic.py       ├── gemini.py             └── openrouter.py
-│   ├── tools/                     ← pure functions: (inputs) → domain models (add as needed)
-│   ├── prompts/
-│   │   └── transform.md           ← system prompt (REPLACE with your capability's)
-│   └── observability/
-│       └── events.py              ← structlog config + log_span (latency, error)
-├── frontend/
-│   └── public/                    ← ZERO-BUILD static frontend, served at /app
-│       ├── index.html             ← the transform form (REPLACE with your UI)
-│       ├── styles.css
-│       └── app.js                 ← same-origin fetch to the API
-├── tests/                         ← at repo root, NOT inside src/
-│   ├── conftest.py                ← resets settings/db singletons; isolated tmp SQLite per test
-│   ├── unit/                      ← pass with NO API key (15 tests out of the box)
-│   └── integration/               ← REAL LLM/API via .env keys; skip (never stub) if absent
-├── alembic/                       ← wired: env.py reads settings; script.py.mako present
-│   └── versions/                  ← empty in the baseline; first schema change adds 0001
-├── spec/                          ← the spec templates (filled by spec-writer)
-├── support/                      ← rules, patterns, agents, commands
-├── agent.py                       ← doctor (default) / --run (migrate + serve)
-├── pyproject.toml                 ← deps + pytest config (testpaths, pythonpath=["."])
-├── alembic.ini                    ← prepend_sys_path = . (alembic runs without hacks)
-├── .env.example                   ← every env var documented; .env is gitignored
-├── AGENTS.md                      ← the session entry point
-└── README.md
-```
-
-**The capability slot** — the three surfaces to replace for your agent:
-1. `src/graph/nodes.py` — replace `transform_text` with your capability logic (add nodes/edges per `spec/agent.md`)
-2. `src/prompts/transform.md` — replace with your system prompt(s)
-3. `frontend/public/` — replace the transform form with your UI
-
-Everything else (graph assembly, API envelope, DB session, settings, provider layer,
-logging, test fixtures) is wired and tested — change it only when the spec requires it.
+1. **All application source lives inside a dedicated source directory** (backend) and a
+   dedicated frontend directory (if there is a UI). Never place application files at the
+   repo root. The root is for project config, `spec/`, `.env.example`, and the README.
+2. **One package/module root only.** The scaffold establishes one import root; extend it
+   in place — never create a second package beside it, never copy it to a new name. Two
+   packages = dead code + two sources of truth.
+3. **Tests live at the repo root** (`tests/` or the stack's convention), outside the
+   source package, with unit and integration tiers separated.
+4. **`spec/` is part of the project.** The spec files are committed with the code they
+   govern — they are the durable memory every session re-reads.
+5. **`.env.example` documents every env var**; `.env` holds the real values and is
+   gitignored, never staged (`../rules/secret-hygiene.md`).
 
 ---
 
-## Key File Shapes (as committed — read the real files, these are the contracts)
+## The Scaffold (replaces a fixed boilerplate)
 
-- **Settings** (`src/config/settings.py`): `env_prefix="AGENT_"`, `.env` file, resettable
-  module singleton (`_settings = None` in tests). `resolve_provider()` auto-detects from
-  whichever key is set; `resolve_model()` falls back to per-provider defaults.
-- **DB** (`src/db/session.py`): lazy engine + sessionmaker singletons, `get_session()`
-  FastAPI dependency, `create_db_session()` context manager for nodes/scripts, `init_db()`
-  create_all for the baseline. **Schema changes beyond the baseline ship an alembic
-  revision** — `create_all` never ALTERs an existing table; a stale dev DB turns a green
-  suite into a live 500.
-- **Nodes** (`src/graph/nodes.py`): `(state) -> partial state`; failures go into
-  `state["error"]` (the error edge routes to `handle_error`) — never raise through the graph.
-- **API** (`src/api/`): every route returns `ok(data)` or raises `api_error(code, message,
-  status)`. A failed agent run is a 200 with `status: "failed"` + an actionable
-  `error_message` — never a naked 500.
-- **Tests** (`tests/conftest.py`): autouse fixtures reset the settings/db singletons and
-  point `AGENT_DATABASE_URL` at a tmp SQLite file per test; the `no_keys` fixture blanks
-  provider keys via env vars (env beats `.env` in pydantic-settings). Integration tests
-  `pytest.skip` when no real key is present — they never stub.
+The spec-writer designs the concrete tree — directories, entry point, config module,
+test harness — as part of `spec/architecture.md`. The scaffold stage then builds it as a
+**minimal runnable skeleton**: the app boots via its documented run command, a smoke test
+passes, and the working tree is committed, *before* Phase 1 slices begin. That scaffold
+gate is what a cloned boilerplate used to guarantee ("tests pass out of the box") — now
+it is guaranteed per-project, on whatever stack the spec chose.
 
----
+A good scaffold, whatever the language:
 
-## Alembic (wired, empty until first schema change)
+- **entry point** — one documented run command starts the app (pinned interpreter/runtime,
+  non-default port, env-overridable);
+- **config module** — typed settings loaded from env/`.env`, validated at startup, secret
+  fields never printable;
+- **persistence** — engine/session setup plus the migration tool wired from day one if
+  the project has a database;
+- **test harness** — the test runner configured with automated setup/teardown against the
+  production engine, one command to run;
+- **observability** — structured logging wired, not deferred.
 
-`alembic.ini` carries `prepend_sys_path = .` (so `from src...` imports resolve — without it
-`alembic` fails with `ModuleNotFoundError` even though pytest passes) and `env.py` injects
-the URL from settings. On the first schema change:
+## AI-Native Layout Rules (for any project with LLM capabilities)
 
-```bash
-# repo root
-uv run alembic revision --autogenerate -m "describe the change"
-uv run alembic upgrade head
-uv run alembic current        # must print a revision — blank = silent failure
-```
+When `spec/agent.md` gives the project AI capabilities, the layout additionally provides:
 
----
+1. **An LLM abstraction layer** — application code calls one internal client interface,
+   never a provider SDK/API directly; providers are swappable adapters behind it, and the
+   model name comes from configuration.
+2. **Prompts are files, not string literals** — kept in a dedicated prompts directory,
+   loaded at runtime, reviewable in diffs.
+3. **The agent graph/loop is its own module** — state, nodes/steps, routing, and assembly
+   live together, mirroring the structure documented in `spec/agent.md`, so the drift
+   audit can compare code to spec mechanically.
+4. **Retry/backoff at the provider boundary** — rate limits and transient errors are
+   handled once, in the adapter, with actionable errors for auth/model failures.
+5. **Every LLM call is instrumented** — latency, token/cost signal, and error logged per
+   call (`engineering-practices.md` → Observability).
 
-## Rules
+## Structural Rules (any stack)
 
-1. **Agent code goes in `src/`** — never at the repo root.
-2. **No repository pattern** — direct SQLAlchemy queries in nodes and API handlers.
-3. **TypedDict state** — not dataclass or Pydantic, for graph state.
-4. **Tools are pure functions** — `(inputs) → domain model`, no class instantiation.
-5. **Prompts are `.md` files** in `src/prompts/` — loaded at runtime via `load_prompt()`.
-6. **LLM abstraction** — nodes call `LLMClient`, never a provider adapter directly.
-7. **Response envelope** — every route returns `ok(data)` or raises `api_error()`.
-8. **Singletons resettable** — settings and db expose module-level `_x = None` reset.
-9. **Frontend is zero-build by default** — static files in `frontend/public/`, served
-   single-origin at `/app`. Adopt a JS framework only when the spec demands it; the build
-   then becomes part of the gate.
-10. **Gates run against real services** — real LLM/API keys from `.env`, production DB
-    driver (never SQLite when prod is PostgreSQL).
+1. **A response envelope at every API boundary** — one consistent success/error shape;
+   a failed run is a structured, actionable error, never a naked 500 or a stack trace.
+2. **Singletons are resettable** — settings/DB/client singletons expose a reset seam so
+   tests can isolate state.
+3. **Tools/helpers are pure functions** where possible — inputs → typed outputs, no
+   hidden state.
+4. **Gates run against real services** — real LLM/API keys from `.env`, the production
+   database engine (`tech-stack.md`).
+
+> *Field reference:* the original harness shipped these principles as a committed Python
+> baseline — FastAPI app factory, LangGraph graph module, SQLAlchemy session, structlog,
+> static single-origin frontend, alembic wired, tests green on a fresh clone. That tree
+> remains a worked example of this file's rules, not a requirement: the same shape exists
+> for a Node service, a Go CLI, or any stack the spec picks.
