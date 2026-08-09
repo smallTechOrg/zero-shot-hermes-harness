@@ -135,7 +135,7 @@ Evidence counts are from `~/.hermes/logs/agent.log*` across Jul 10–20 builds.
   Docker on a Python+uv machine: `dotnet: command not found`, `Microsoft.Data.SqlClient.
   SqlException`, `Unable to find application 'Docker'`. The branch name also had **no
   date-time slug**, so it collided instead of starting fresh.
-- **Fix (two guards, both in `harness/rules/git.md` + Stage 2 scaffold):**
+- **Fix (two guards, both in `../../rules/git.md` + Stage 2 scaffold):**
   1. **Unique branch, always.** Name every build branch `feature/<slug>-$(date +%Y%m%d-%H%M)-v0.1`
      and, before `checkout -b`, run `git ls-remote --heads origin "<name>"` — if it exists,
      the timestamp makes a new one. NEVER `git checkout` an existing feature branch to build

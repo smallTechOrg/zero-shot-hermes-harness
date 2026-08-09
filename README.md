@@ -109,6 +109,37 @@ skills:
 *Optional:* `uv sync && uv run python agent.py` runs a doctor over the baseline (deps, `.env`,
 app, unit tests). Not required to build.
 
+### Install into a local Hermes (harness stays out of your codebase)
+
+The simplest way to use these skills without keeping the harness inside every
+agent repo is to **tap the harness repo**. Hermes reads the skills straight
+from the repo's `harness/skills/` — your unique copy lives here, and any skills
+Hermes creates or learns on its own go to its own `~/.hermes/skills/` directory,
+so nothing collides or gets overwritten.
+
+```bash
+# public repo (no auth needed):
+hermes skills tap add smallTechOrg/zero-shot-hermes-harness
+
+# then (re)load:
+hermes skills list            # should list zero-shot-build / -fix / -sync
+/reload-skills                # or restart Hermes to pick them up
+```
+
+Invoking in any session:
+
+```
+/zero-shot-build <idea>
+/zero-shot-fix <bug | error | "tests" | "drift">
+/zero-shot-sync [scope]
+```
+
+The skills reference the shared roles/patterns/rules inside this repo
+(`harness/agents`, `harness/patterns`, `harness/rules`, `harness/commands`), so
+keep the clone/checkout intact. Pulling harness updates flows in automatically
+on the next skill load — no copy step. Remove the tap any time with
+`hermes skills tap remove smallTechOrg/zero-shot-hermes-harness`.
+
 ## What Happens
 
 ```
