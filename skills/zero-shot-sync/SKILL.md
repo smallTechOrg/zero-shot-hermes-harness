@@ -1,11 +1,16 @@
 ---
 name: zero-shot-sync
-description: Reconcile spec and code so they match. Audits the whole tree for drift, brings code in line with the spec (spec wins), and verifies. Calls worker roles directly; runs autonomously to a CLEAN audit.
+description: Reconcile spec and code so they match — spec wins — then verify (whole-tree drift audit).
 argument-hint: [optional path or capability to scope to]
 disable-model-invocation: true
 ---
 
-You are the ROOT SESSION orchestrating a spec↔code sync by running the specialist roles in `../../support/agents/` — delegated via your platform's mechanism (Claude Code: the Task tool / native sub-agents; Hermes: `delegate_task`) when available, **inline otherwise** (read the role file as a checklist). Verify every handback. **Spec is the source of truth — when spec and code disagree, fix the code** (`../../support/patterns/spec-driven.md`). Optional scope in `$ARGUMENTS`; otherwise the whole project. Run autonomously to a CLEAN audit; pause only on a hard blocker or if a divergence reveals the *spec* is wrong (surface it — don't silently rewrite the spec to match code).
+You are the ROOT SESSION orchestrating a spec↔code sync by running the specialist roles in `support/agents/` — delegated via your platform's mechanism (Claude Code: the Task tool / native sub-agents; Hermes: `delegate_task`) when available, **inline otherwise** (read the role file as a checklist). Verify every handback. **Spec is the source of truth — when spec and code disagree, fix the code** (`support/patterns/spec-driven.md`). Optional scope in `$ARGUMENTS`; otherwise the whole project. Run autonomously to a CLEAN audit; pause only on a hard blocker or if a divergence reveals the *spec* is wrong (surface it — don't silently rewrite the spec to match code).
+
+> **Shared material** is referenced as `support/…` — the harness's shared tree, two levels
+> up from this file (`skills/<name>/SKILL.md` -> `support/`) in the repo checkout, the
+> Hermes tap, and the installed Claude plugin. For a per-skill Hermes install, the README
+> says how to place it at `~/.hermes/support`.
 
 **qa-auditor runs FIRST** — read-only, it finds and classifies every divergence and its direction; its verdict routes each fix to the **code-generator** role by named surface (per the project's declared layout in `spec/architecture.md`). You (the root session) own the commit + push.
 
@@ -38,4 +43,4 @@ Invoke **qa-auditor** (drift mode) again. Repeat 2–4 until CLEAN (modulo spec-
 
 ## Step 6 — Ship + report
 
-Commit + push yourself (atomic `git commit … && git push`, staging only the changed files, per `../../support/rules/git.md`). Summarize: divergences by severity and surface, which were fixed in code (files + regression tests), which were surfaced as possible spec bugs awaiting decision, and the final audit status.
+Commit + push yourself (atomic `git commit … && git push`, staging only the changed files, per `support/rules/git.md`). Summarize: divergences by severity and surface, which were fixed in code (files + regression tests), which were surfaced as possible spec bugs awaiting decision, and the final audit status.
