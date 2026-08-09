@@ -45,9 +45,10 @@ raise ValueError("Auth failed. Check your API key in .env.")
 
 ### Never `print()` or `repr()` a config object that may contain secrets
 
-Config models use pydantic. Secret fields must use pydantic's `SecretStr` type.
-`SecretStr.get_secret_value()` is the only way to extract the raw value, and it
-should be called only at the boundary where the secret is actually used.
+Secret config fields must use a wrapper type that cannot be printed or serialized
+accidentally, unwrapped only at the boundary where the secret is actually used (e.g.
+pydantic's `SecretStr` with `get_secret_value()` in Python; an equivalent redacting
+wrapper in other stacks).
 
 ## Rules for `.gitignore`
 

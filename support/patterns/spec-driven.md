@@ -1,6 +1,6 @@
 # Spec-Driven Development
 
-This project follows a strict spec-first discipline. This file explains what that means in practice.
+Every project this harness builds follows a strict spec-first discipline. This file explains what that means in practice.
 
 ## The Rule
 
@@ -25,17 +25,20 @@ When spec comes first:
 ## What Goes in the Spec
 
 **Product spec (`spec/`):**
-- What the agent does (behavior, not implementation)
+- What the product does (behavior, not implementation)
 - Who uses it and why
 - What data it handles
 - What APIs and integrations it uses
 - What the UI looks like (if any)
+- **The AI-native design (`spec/agent.md`) — written for every project**: which agentic
+  patterns the product uses, or the explicit, reasoned conclusion that it needs none
+  (`agentic-ai.md` → "The AI-native lens")
 
 **Chosen stack (in `spec/architecture.md`):**
-- The project's language/framework/LLM/database lives in the `## Stack` section — app-specific, captured at intake.
+- The project's language/framework/LLM/database lives in the `## Stack` section — derived from requirements at intake (no default stack), with layout under `## Layout` and conventions under `## Conventions`.
 
 **Support material (`support/`):**
-- `support/patterns/tech-stack.md` — generic stack rules; `support/patterns/code.md` — generic code conventions; `support/patterns/agentic-ai.md` — agentic-pattern catalogue
+- `tech-stack.md` — generic stack rules; `code.md` — generic code conventions; `agentic-ai.md` — agentic-pattern catalogue
 - How to handle errors, secrets, and testing
 - What the implementation phases are
 - Repeatable workflows for AI sessions
@@ -63,3 +66,10 @@ If the spec says X and the code does Y:
 ## Adding a New Capability
 
 Run `/zero-shot-build` on the existing spec — it drives the spec-writer to add the capability, then plans, builds, and verifies it. Do not add capabilities by writing code and then describing what you built.
+
+## Repo-Independence
+
+The harness is installed once (plugin/skills) and operates on whatever project repo the
+session is in. `spec/` always refers to the **target project's** spec directory — created
+by the spec-writer on the first build if it doesn't exist — never to a directory inside
+the harness itself.

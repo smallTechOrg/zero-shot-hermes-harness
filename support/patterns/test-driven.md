@@ -1,7 +1,7 @@
 
 # Test-Driven Development
 
-How tests are written in this repo. This expands the Testing section of `engineering-practices.md` into a concrete discipline. It applies to every phase and every fix.
+How tests are written in every project this harness builds. This expands the Testing section of `engineering-practices.md` into a concrete discipline. It applies to every phase and every fix.
 
 ---
 
@@ -39,7 +39,7 @@ A flaky test is worse than no test — it trains everyone to ignore red.
 
 - **No wall clock.** Inject time (a `clock` parameter, a frozen-time fixture). Never assert against `now()`.
 - **No randomness.** Seed it, or pass the value in. A test that fails 1-in-50 runs is a defect.
-- **Determinism at the unit level.** Pure unit tests inject time/seeds and may stub the provider boundary. Integration and E2E tests DO call the real LLM/API (keys from `.env`); for those, assert on response shape/invariants (status, key fields, structure) and tolerate non-deterministic prose rather than exact strings.
+- **Determinism at the unit level.** Pure unit tests inject time/seeds and may stub the provider boundary. Integration and E2E tests DO call the real external services the spec names — the real LLM/API when the design has AI capability (keys from `.env`); for those, assert on response shape/invariants (status, key fields, structure) and tolerate non-deterministic prose rather than exact strings.
 - **No shared mutable state between tests.** Each test sets up and tears down its own world. Order-dependence is a bug.
 
 ---
@@ -49,8 +49,8 @@ A flaky test is worse than no test — it trains everyone to ignore red.
 For pure-unit isolation, prefer a thin real implementation (in-memory queue, fake repository, stub LLM provider) over a framework mock. Integration and E2E tests use the **real provider**, not a stub.
 
 - Stubs **compose** and survive refactors; mocks encode call sequences and break on them.
-- IF a stub LLM provider is used (unit tests or optional offline dev), it should produce **distinct, node-tagged output** (see `rules/ai-agents.md` rule 8) so it is credible and node cross-contamination is caught.
-- Use the production DB driver in integration tests (PostgreSQL via `conftest.py` setup/teardown) — **never** SQLite-as-a-substitute (`rules/ai-agents.md` rule 5).
+- IF a stub LLM provider is used (unit tests or optional offline dev), it should produce **distinct, node-tagged output** (see `../rules/ai-agents.md` → "Optional stub fallback") so it is credible and node cross-contamination is caught.
+- Integration tests use production-equivalent external services via the stack's automated fixture mechanism — **never** a lighter stand-in (e.g. PostgreSQL via `conftest.py` setup/teardown, never SQLite-as-a-substitute; `../rules/ai-agents.md` rule 5).
 
 ---
 
@@ -64,6 +64,26 @@ So a single happy-path test of a stateful capability is **not coverage of that c
 - **State-survival test** — reload the page / restart the process, then assert prior state is still present and usable.
 
 Derive what to test from the phase's **capabilities**, not its endpoints: if the spec claims "persistent sessions" or "remembers across…", the absence of a multi-interaction + survival test is a coverage hole, regardless of line coverage.
+
+---
+
+## Gate Tests Must Cover the Capability's Hard Cases
+
+The gate is not "one easy example passes" — it must exercise the **hard, idiomatic
+inputs the capability promises** and push the **real service's hard outputs through
+every guard** on the user's path:
+
+- **Hard inputs, not toy inputs.** If the capability promises "analyse any CSV", the
+  gate fixture includes the messy shapes real users bring: mixed types, empty cells,
+  unicode, a column the prompt didn't anticipate. One clean happy-path fixture proves
+  only the demo works.
+- **Real outputs through every guard.** When the capability calls an LLM or external
+  API, the gate must let the *real* response — verbose, oddly formatted, occasionally
+  refusing — flow through every parser, validator, and renderer the user's path uses.
+  A hand-crafted ideal response tests your guards against an input they will never see.
+- **The promise defines the test set.** Derive cases from the capability spec's success
+  criteria and business rules, not from what the implementation happens to handle.
+  Every promised behaviour gets at least one gate case that would fail if it regressed.
 
 ---
 
@@ -85,7 +105,7 @@ For every capability that processes a dataset:
 | Level | Count | Speed | Scope |
 |-------|-------|-------|-------|
 | Unit | many | ms | one function/class, all deps stubbed |
-| Integration | fewer | 100s of ms | real DB and real LLM/API boundary (keys from `.env`) |
+| Integration | fewer | 100s of ms | the real external-service boundaries the spec names — DB, LLM/API (keys from `.env`) |
 | E2E / smoke | fewest | seconds | a real process, golden-path user journey |
 
 Push assertions **down** the pyramid: if a unit test can catch it, don't wait for the smoke test. The golden-path UI smoke test runs against the **live provider** and asserts **real response content**, not just status codes — a 200 that renders a broken or unstyled page is a failing test. For any UI, verify the built CSS bundle contains real utility selectors; a passing build is not proof of styling.
@@ -103,7 +123,7 @@ Push assertions **down** the pyramid: if a unit test can catch it, don't wait fo
 ## Before You Claim Done
 
 - Run the **full** suite, not just the test you touched. Show the output.
-- "It should pass" is not a passing test (`rules/ai-agents.md` rule 2). Run it or say you couldn't.
-- A phase is not complete until its gate suite is green against the production DB driver WITH real LLM/API keys from `.env`, including edge-case and E2E/UI tests.
+- "It should pass" is not a passing test (`../rules/ai-agents.md` rule 2). Run it or say you couldn't.
+- A phase is not complete until its gate suite is green against the production database engine WITH real keys from `.env` for every external service the spec names, including edge-case and E2E/UI tests.
 - For analytical capabilities: assert the correct answer against a fixture with a known result — a non-empty response is not a passing gate.
 - For stateful capabilities: drive at least two interactions in the same session and assert the second sees the first — a single happy-path call proves nothing about state.
