@@ -1,4 +1,4 @@
-# Zero-Shot SDD Skills — Hermes skill harness
+# Zero-Shot SDD Skills (v2) — Hermes skill harness
 
 Three Hermes skills for building agentic software **spec-first**. Give it a
 one-line idea; walk away with a working, tested, phased agent. The skills are

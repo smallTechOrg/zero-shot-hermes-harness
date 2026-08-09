@@ -1,4 +1,4 @@
-# Zero-Shot SDD Skills — entry point
+# Zero-Shot SDD Skills (v2) — entry point
 
 This repo is a **Hermes skill package** (repo-independent). The authoritative
 orientation for Hermes is `.hermes.md`. This file is a short mirror.
