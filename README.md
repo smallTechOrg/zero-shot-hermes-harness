@@ -7,17 +7,36 @@ whatever agent repo you point them at.
 
 ## Install
 
+The reliable way — install each skill once into `~/.hermes/skills/` (deterministic;
+the skills show up in `hermes skills list` immediately and survive `/reload-skills`):
+
 ```bash
-hermes skills tap add smallTechOrg/zero-shot-hermes-harness
-# then in a Hermes session:
-/reload-skills          # or restart Hermes
+hermes skills install smallTechOrg/zero-shot-hermes-harness/skills/zero-shot-build --name zero-shot-build --yes
+hermes skills install smallTechOrg/zero-shot-hermes-harness/skills/zero-shot-fix   --name zero-shot-fix   --yes
+hermes skills install smallTechOrg/zero-shot-hermes-harness/skills/zero-shot-sync  --name zero-shot-sync  --yes
 ```
 
-This taps the repo's top-level `skills/` directory. Hermes reads the skills
-from here; any skills Hermes creates or learns on its own go to
-`~/.hermes/skills/` — a separate location, so nothing collides or gets
-overwritten. Remove the tap any time with
-`hermes skills tap remove smallTechOrg/zero-shot-hermes-harness`.
+Then, in a Hermes session, run **`/reload-skills`** (or restart Hermes). Confirm
+with `hermes skills list` — you should see `zero-shot-build`, `zero-shot-fix`,
+`zero-shot-sync` marked `enabled`.
+
+> The installed copy lives in `~/.hermes/skills/`, separate from any skills Hermes
+> creates or learns on its own — nothing collides or gets overwritten. To pull
+> harness updates later, re-run the three `install` commands with `--force`.
+
+**Optional — tap the repo instead of installing.** Tapping reads the skills
+straight from the repo's `skills/` dir (your unique copy stays in the repo):
+
+```bash
+hermes skills tap add smallTechOrg/zero-shot-hermes-harness
+hermes skills tap remove smallTechOrg/zero-shot-hermes-harness   # to undo
+```
+
+Note: tapped skills can be slow or intermittently unavailable in `hermes skills
+list`/`search` because they're fetched live from GitHub. If a tapped skill
+doesn't appear, use the `hermes skills install` method above, or verify with
+`hermes skills inspect smallTechOrg/zero-shot-hermes-harness/skills/zero-shot-build`
+(the full tap-qualified name).
 
 ## Invoke
 
