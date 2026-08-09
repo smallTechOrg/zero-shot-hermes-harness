@@ -13,7 +13,7 @@ allowed-tools: Bash(git*) Bash(gh*) Bash(uv*)
 (`max_spawn_depth=1`), cannot talk to the user, and their background processes are killed the
 moment they return. Everything that needs the user, git, or a long-lived server therefore
 lives HERE, in the root session. You delegate *leaf work* (spec-writing, one code slice, one
-audit) to the specialist roles in `harness/agents/` — via `delegate_task` when it is
+audit) to the specialist roles in `../../agents/` — via `delegate_task` when it is
 available, **inline otherwise** — and you verify every handback yourself.
 
 The idea is in `$ARGUMENTS`. **If `$ARGUMENTS` is empty, ask the user in plain text to
@@ -44,7 +44,7 @@ at a time.**
    (git is yours). A worker that returned at "95% done" is normal — **you finish the
    remainder inline**; never re-delegate the same 5%.
 3. **Fall back inline.** If delegation is unavailable, errors out, or stalls: read the role
-   file (`harness/agents/<role>.md`) and execute it yourself as a checklist, in the same
+   file (`../../agents/<role>.md`) and execute it yourself as a checklist, in the same
    order the delegated version would run. The build NEVER stalls waiting for a worker that
    cannot spawn. Inline is the *normal* mode on constrained Hermes configs, not a failure.
 
@@ -197,12 +197,12 @@ explicitly. ("Just build it" → narrow MVP, baseline defaults, documented as as
 1. **DESIGN** — run the **spec-writer** role (delegate or inline) with the brief. It writes
    the full spec: capabilities, `spec/architecture.md` (incl. `## Stack`), `spec/agent.md`
    (the agent graph — REQUIRED when a framework is chosen; pick patterns from
-   `harness/patterns/agentic-ai.md`), and the phased plan in `spec/roadmap.md` (per phase:
+   `../../patterns/agentic-ai.md`), and the phased plan in `spec/roadmap.md` (per phase:
    Goal · independent slices · key files · the exact runnable Gate command · how the user
    tests it). **Verify on handback**: no `<!-- FILL IN -->` left, every phase has a runnable
    gate, `spec/agent.md` exists if a framework is chosen. Surface its `Assumed:` flags to
    the user in your next message (don't wait on them).
-2. **SCAFFOLD** — you own git (`harness/rules/git.md`):
+2. **SCAFFOLD** — you own git (`../../rules/git.md`):
    - **Clean-baseline precheck (do this FIRST).** A fresh build must start from untouched
      boilerplate: confirm `spec/` still has `<!-- FILL IN -->` markers AND no app/agent
      output dir already exists. If either is already populated, you are on a PRIOR build's

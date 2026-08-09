@@ -111,18 +111,22 @@ app, unit tests). Not required to build.
 
 ### Install into a local Hermes (harness stays out of your codebase)
 
-If you'd rather not keep the harness inside each agent repo, the install script
-copies the three skills into your Hermes install and wires them to a single
-shared copy of the roles/patterns/rules — fully self-contained, no `harness/`
-dir needed at your project root:
+The simplest way to use these skills without keeping the harness inside every
+agent repo is to **tap the harness repo**. Hermes reads the skills straight
+from the repo's `harness/skills/` — your unique copy lives here, and any skills
+Hermes creates or learns on its own go to its own `~/.hermes/skills/` directory,
+so nothing collides or gets overwritten.
 
 ```bash
-bash install-hermes-skills.sh                # install into ~/.hermes/skills
-bash install-hermes-skills.sh --uninstall    # remove
+# public repo (no auth needed):
+hermes skills tap add smallTechOrg/zero-shot-hermes-harness
+
+# then (re)load:
+hermes skills list            # should list zero-shot-build / -fix / -sync
+/reload-skills                # or restart Hermes to pick them up
 ```
 
-Then invoke with slash commands in any Hermes session (restart Hermes once after
-installing so it picks up the new skills):
+Invoking in any session:
 
 ```
 /zero-shot-build <idea>
@@ -130,7 +134,11 @@ installing so it picks up the new skills):
 /zero-shot-sync [scope]
 ```
 
-Re-run the script after pulling harness updates to refresh the local copies.
+The skills reference the shared roles/patterns/rules inside this repo
+(`harness/agents`, `harness/patterns`, `harness/rules`, `harness/commands`), so
+keep the clone/checkout intact. Pulling harness updates flows in automatically
+on the next skill load — no copy step. Remove the tap any time with
+`hermes skills tap remove smallTechOrg/zero-shot-hermes-harness`.
 
 ## What Happens
 

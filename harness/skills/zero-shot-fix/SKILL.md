@@ -6,7 +6,7 @@ disable-model-invocation: true
 allowed-tools: Bash(git*) Bash(uv run*)
 ---
 
-You are the ROOT SESSION orchestrating a targeted fix by running the specialist roles in `harness/agents/` — via `delegate_task` when available, **inline otherwise** (read the role file as a checklist; the build never stalls waiting for a worker that can't spawn). Verify every handback: files exist, the gate was really run. The target is in `$ARGUMENTS`. **If `$ARGUMENTS` is empty, ask the user in plain text to describe what's broken — the bug, error, failing test, or drift — and WAIT for their free-text reply before doing anything else.** Do NOT load `clarify` to solicit, suggest, or pick the problem — the problem statement must come from the user as their own text. Only once you have it do you proceed to Step 1. Run autonomously: diagnose+classify → fix → verify, looping until the failure signal is gone. Pause only on a hard blocker or explicit request.
+You are the ROOT SESSION orchestrating a targeted fix by running the specialist roles in `../../agents/` — via `delegate_task` when available, **inline otherwise** (read the role file as a checklist; the build never stalls waiting for a worker that can't spawn). Verify every handback: files exist, the gate was really run. The target is in `$ARGUMENTS`. **If `$ARGUMENTS` is empty, ask the user in plain text to describe what's broken — the bug, error, failing test, or drift — and WAIT for their free-text reply before doing anything else.** Do NOT load `clarify` to solicit, suggest, or pick the problem — the problem statement must come from the user as their own text. Only once you have it do you proceed to Step 1. Run autonomously: diagnose+classify → fix → verify, looping until the failure signal is gone. Pause only on a hard blocker or explicit request.
 
 **qa-auditor runs FIRST** — it diagnoses, captures the failing signal, and CLASSIFIES the root cause (SPEC vs CODE, and which surface). Its verdict ROUTES the fix and names the surface. Fixing happens in the **code-generator** role (one invocation per named surface — `src/` and/or frontend); judging happens in read-only **qa-auditor**; you (the root session) own the commit + push.
 
@@ -55,4 +55,4 @@ Invoke **qa-auditor** in full gate mode (real-key tests from `.env`, full suite 
 
 ## Step 4 — Ship + report
 
-Commit + push the fix yourself (atomic `git commit … && git push`, staging only the changed files, per `harness/rules/git.md`). Summarize: classification (SPEC/CODE + surface), root cause (1–2 sentences), files changed, the regression test added, the verified before→after, and the pushed SHA.
+Commit + push the fix yourself (atomic `git commit … && git push`, staging only the changed files, per `../../rules/git.md`). Summarize: classification (SPEC/CODE + surface), root cause (1–2 sentences), files changed, the regression test added, the verified before→after, and the pushed SHA.

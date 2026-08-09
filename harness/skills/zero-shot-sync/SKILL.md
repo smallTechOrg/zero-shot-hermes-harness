@@ -6,7 +6,7 @@ disable-model-invocation: true
 allowed-tools: Bash(git*) Bash(uv run*)
 ---
 
-You are the ROOT SESSION orchestrating a spec↔code sync by running the specialist roles in `harness/agents/` — via `delegate_task` when available, **inline otherwise** (read the role file as a checklist). Verify every handback. **Spec is the source of truth — when spec and code disagree, fix the code** (harness/patterns/spec-driven.md). Optional scope in `$ARGUMENTS`; otherwise the whole project. Run autonomously to a CLEAN audit; pause only on a hard blocker or if a divergence reveals the *spec* is wrong (surface it — don't silently rewrite the spec to match code).
+You are the ROOT SESSION orchestrating a spec↔code sync by running the specialist roles in `../../agents/` — via `delegate_task` when available, **inline otherwise** (read the role file as a checklist). Verify every handback. **Spec is the source of truth — when spec and code disagree, fix the code** (../../patterns/spec-driven.md). Optional scope in `$ARGUMENTS`; otherwise the whole project. Run autonomously to a CLEAN audit; pause only on a hard blocker or if a divergence reveals the *spec* is wrong (surface it — don't silently rewrite the spec to match code).
 
 **qa-auditor runs FIRST** — read-only, it finds and classifies every divergence and its direction; its verdict routes each fix to the **code-generator** role by named surface. You (the root session) own the commit + push.
 
@@ -41,4 +41,4 @@ Invoke **qa-auditor** (drift mode) again. Repeat 2–4 until CLEAN (modulo spec-
 
 ## Step 6 — Ship + report
 
-Commit + push yourself (atomic `git commit … && git push`, staging only the changed files, per `harness/rules/git.md`). Summarize: divergences by severity and surface, which were fixed in code (files + regression tests), which were surfaced as possible spec bugs awaiting decision, and the final audit status.
+Commit + push yourself (atomic `git commit … && git push`, staging only the changed files, per `../../rules/git.md`). Summarize: divergences by severity and surface, which were fixed in code (files + regression tests), which were surfaced as possible spec bugs awaiting decision, and the final audit status.
