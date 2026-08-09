@@ -15,7 +15,7 @@ Three Hermes skills for spec-driven agent development, plus the shared
 ## Install (Hermes)
 
 ```bash
-hermes skills tap add smallTechOrg/zero-shot-hermes-harness
+hermes skills tap add smallTechOrg/zero-shot-harness
 /reload-skills        # or restart Hermes
 ```
 

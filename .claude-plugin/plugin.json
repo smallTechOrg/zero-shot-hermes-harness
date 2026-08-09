@@ -1,0 +1,18 @@
+{
+  "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
+  "name": "zero-shot-harness",
+  "version": "0.1.0",
+  "description": "Spec-first agent-building harness. Turn a one-line idea into a working, tested, phased agent — autonomous within a phase, human testing gate between phases. Ships three skills (build/fix/sync), a four-agent team, and the engineering patterns and rules that keep every session consistent.",
+  "author": {
+    "name": "smallTechOrg"
+  },
+  "homepage": "https://github.com/smallTechOrg/zero-shot-harness",
+  "license": "MIT",
+  "keywords": [
+    "spec-driven",
+    "agents",
+    "scaffolding",
+    "tdd",
+    "orchestration"
+  ]
+}
