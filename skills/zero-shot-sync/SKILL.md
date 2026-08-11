@@ -1,6 +1,6 @@
 ---
-name: zero-shot-sync
-description: Reconcile spec and code so they match — spec wins — then verify (whole-tree drift audit).
+name: sync
+description: Reconcile spec and code — audits for drift, fixes code to match spec, verifies.
 argument-hint: [optional path or capability to scope to]
 disable-model-invocation: true
 ---

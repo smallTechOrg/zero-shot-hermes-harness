@@ -1,6 +1,6 @@
 ---
-name: zero-shot-build
-description: Build a spec-driven, phased project from a one-line idea — autonomous within a phase, human testing gate between phases. Also adds a capability to an existing project.
+name: build
+description: Idea → working, tested, phased project. Also adds a new capability to an existing project.
 argument-hint: [your idea]
 disable-model-invocation: true
 ---

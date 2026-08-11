@@ -1,6 +1,6 @@
 ---
-name: zero-shot-fix
-description: Diagnose and fix a bug, runtime error, failing test, or spec/code drift in an existing project, then verify the fix.
+name: fix
+description: Diagnose and fix a bug, runtime error, failing tests, or spec/code drift, then verify.
 argument-hint: [bug description / error / "tests" / "drift"]
 disable-model-invocation: true
 ---
