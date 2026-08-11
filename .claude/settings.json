@@ -1,0 +1,5 @@
+{
+  "enabledPlugins": {
+    "zero-shot-harness@zero-shot-harness": true
+  }
+}

@@ -17,7 +17,7 @@ only the wrapper differs.
 ```
 
 Then, in the project you'll build in, set up autonomy once — copy the permissions preset
-from the README's **"Autonomy setup"** section into that project's
+from **[docs/claude-code-autonomy.md](docs/claude-code-autonomy.md)** into that project's
 `.claude/settings.json`. Without it, every build command raises a permission prompt and
 the autonomous phase loop degrades to a click-through session.
 
