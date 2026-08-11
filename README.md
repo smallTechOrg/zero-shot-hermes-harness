@@ -28,6 +28,15 @@ The three skills, four sub-agents, and the shared `support/` material all come w
 plugin. Confirm with `/plugin` (it should list `zero-shot-harness` as enabled). Then do
 the one-time **Autonomy setup** below for each project you build in.
 
+### Uninstall — Claude Code
+
+```
+/plugin uninstall zero-shot-harness --scope project
+/plugin marketplace remove smallTechOrg/zero-shot-harness
+```
+
+Use `--scope user` if you installed globally.
+
 ## Autonomy setup (recommended — permissions out of the loop's way)
 
 The build is autonomous *within* a phase — that only works if Claude Code isn't pausing
@@ -110,6 +119,15 @@ git clone --depth 1 https://github.com/smallTechOrg/zero-shot-harness /tmp/zsh \
 
 Confirm with `hermes skills list` — the three skills should show `enabled`. To pull
 updates later, re-run the installs with `--force` and refresh `~/.hermes/support`.
+
+### Uninstall — Hermes
+
+```bash
+hermes skills tap remove smallTechOrg/zero-shot-harness   # if tapped
+# or, if per-skill installed:
+hermes skills uninstall build fix sync
+rm -rf ~/.hermes/support
+```
 
 ## Invoke
 
