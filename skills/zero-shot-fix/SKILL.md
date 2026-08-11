@@ -1,6 +1,6 @@
 ---
-name: zero-shot-fix
-description: Diagnose and fix a problem in an existing project — a bug description, a runtime error/stack trace, failing tests, or spec/code drift — then verify the fix. Calls the worker roles directly; runs autonomously to a verified result.
+name: fix
+description: Diagnose and fix a bug, runtime error, failing tests, or spec/code drift, then verify.
 argument-hint: [bug description / error / "tests" / "drift"]
 disable-model-invocation: true
 ---

@@ -1,6 +1,6 @@
 ---
-name: zero-shot-build
-description: Turn a zero-shot idea into a perfectly-working, thoroughly-tested, spec-driven project — AI-natively designed on whatever stack the requirements pick. One deep intake (which also collects any API keys into .env), then the build runs one phase at a time — autonomous within a phase, with a human testing gate between phases. Also used to add a new capability to an existing project.
+name: build
+description: Idea → working, tested, phased project. Also adds a new capability to an existing project.
 argument-hint: [your idea]
 disable-model-invocation: true
 ---
